@@ -1,3 +1,1 @@
-import pymysql
-
-pymysql.install_as_MySQLdb()
+# PyMySQL configuration removed for PostgreSQL deployment
