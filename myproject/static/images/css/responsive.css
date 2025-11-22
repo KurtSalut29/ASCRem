@@ -1,0 +1,402 @@
+/* ===================================
+   GLOBAL RESPONSIVE STYLES FOR ASCReM
+   =================================== */
+
+/* Base responsive setup */
+* {
+    box-sizing: border-box;
+}
+
+body {
+    margin: 0;
+    padding: 0;
+    overflow-x: hidden;
+}
+
+/* Container and layout adjustments */
+.container, .container-fluid {
+    padding-left: 15px;
+    padding-right: 15px;
+}
+
+/* ===================================
+   SIDEBAR RESPONSIVE
+   =================================== */
+.sidebar {
+    position: fixed;
+    top: 0;
+    left: 0;
+    height: 100vh;
+    width: 250px;
+    background: #2c3e50;
+    color: white;
+    z-index: 1000;
+    transition: transform 0.3s ease;
+}
+
+.main-content {
+    margin-left: 250px;
+    padding: 20px;
+    min-height: 100vh;
+    transition: margin-left 0.3s ease;
+}
+
+/* Mobile hamburger menu */
+.mobile-menu-toggle {
+    display: none;
+    position: fixed;
+    top: 15px;
+    left: 15px;
+    z-index: 1001;
+    background: #2c3e50;
+    color: white;
+    border: none;
+    padding: 10px;
+    border-radius: 5px;
+    font-size: 18px;
+}
+
+/* ===================================
+   MOBILE DEVICES (up to 768px)
+   =================================== */
+@media (max-width: 768px) {
+    .sidebar {
+        transform: translateX(-100%);
+        width: 280px;
+    }
+    
+    .sidebar.active {
+        transform: translateX(0);
+    }
+    
+    .main-content {
+        margin-left: 0;
+        padding: 60px 15px 20px 15px;
+    }
+    
+    .mobile-menu-toggle {
+        display: block;
+    }
+    
+    /* Sidebar adjustments for mobile */
+    .sidebar .logo {
+        padding: 15px;
+        text-align: center;
+    }
+    
+    .sidebar .logo img {
+        width: 40px;
+        height: 40px;
+    }
+    
+    .sidebar .logo h2 {
+        font-size: 18px;
+        margin: 5px 0;
+    }
+    
+    .sidebar .nav-links a {
+        padding: 12px 20px;
+        font-size: 14px;
+    }
+    
+    /* Cards and grids */
+    .row > [class*="col-"] {
+        margin-bottom: 20px;
+    }
+    
+    .card {
+        margin-bottom: 20px;
+    }
+    
+    /* Tables */
+    .table-responsive {
+        font-size: 12px;
+    }
+    
+    .table th, .table td {
+        padding: 8px 4px;
+        font-size: 12px;
+    }
+    
+    /* Forms */
+    .form-control, .form-select {
+        font-size: 16px; /* Prevents zoom on iOS */
+    }
+    
+    /* Buttons */
+    .btn {
+        padding: 10px 15px;
+        font-size: 14px;
+    }
+    
+    .btn-group .btn {
+        padding: 8px 12px;
+        font-size: 12px;
+    }
+    
+    /* Page headers */
+    .page-header h1, .page-header h2 {
+        font-size: 24px;
+    }
+    
+    /* Hero sections */
+    .hero-section {
+        padding: 30px 15px;
+        text-align: center;
+    }
+    
+    .hero-section .logo-large {
+        width: 80px;
+        height: 80px;
+    }
+    
+    .hero-section h1 {
+        font-size: 28px;
+    }
+    
+    .hero-section h2 {
+        font-size: 24px;
+    }
+    
+    /* Video containers */
+    .video-container {
+        margin: 20px 0;
+    }
+    
+    /* Feature cards */
+    .feature-card, .report-card {
+        margin-bottom: 20px;
+        padding: 15px;
+    }
+    
+    .feature-icon, .report-icon {
+        font-size: 40px;
+    }
+    
+    /* Statistics */
+    .stat-item {
+        margin-bottom: 20px;
+        text-align: center;
+    }
+    
+    .stat-number {
+        font-size: 36px;
+    }
+}
+
+/* ===================================
+   TABLET DEVICES (769px to 1024px)
+   =================================== */
+@media (min-width: 769px) and (max-width: 1024px) {
+    .sidebar {
+        width: 220px;
+    }
+    
+    .main-content {
+        margin-left: 220px;
+        padding: 20px;
+    }
+    
+    .sidebar .logo img {
+        width: 45px;
+        height: 45px;
+    }
+    
+    .sidebar .logo h2 {
+        font-size: 20px;
+    }
+    
+    .sidebar .nav-links a {
+        padding: 15px 18px;
+        font-size: 15px;
+    }
+    
+    /* Adjust grid for tablets */
+    .col-lg-4 {
+        flex: 0 0 50%;
+        max-width: 50%;
+    }
+    
+    .col-lg-3 {
+        flex: 0 0 50%;
+        max-width: 50%;
+    }
+    
+    /* Tables */
+    .table th, .table td {
+        padding: 10px 8px;
+        font-size: 14px;
+    }
+    
+    /* Hero sections */
+    .hero-section .logo-large {
+        width: 100px;
+        height: 100px;
+    }
+    
+    .hero-section h1 {
+        font-size: 32px;
+    }
+    
+    .hero-section h2 {
+        font-size: 28px;
+    }
+}
+
+/* ===================================
+   LAPTOP DEVICES (1025px to 1440px)
+   =================================== */
+@media (min-width: 1025px) and (max-width: 1440px) {
+    .sidebar {
+        width: 250px;
+    }
+    
+    .main-content {
+        margin-left: 250px;
+        padding: 25px;
+    }
+    
+    .container {
+        max-width: 1200px;
+    }
+}
+
+/* ===================================
+   DESKTOP DEVICES (1441px and up)
+   =================================== */
+@media (min-width: 1441px) {
+    .sidebar {
+        width: 280px;
+    }
+    
+    .main-content {
+        margin-left: 280px;
+        padding: 30px;
+    }
+    
+    .container {
+        max-width: 1400px;
+    }
+    
+    .sidebar .logo img {
+        width: 60px;
+        height: 60px;
+    }
+    
+    .sidebar .logo h2 {
+        font-size: 24px;
+    }
+    
+    .sidebar .nav-links a {
+        padding: 18px 25px;
+        font-size: 16px;
+    }
+}
+
+/* ===================================
+   COMMON RESPONSIVE UTILITIES
+   =================================== */
+
+/* Images */
+img {
+    max-width: 100%;
+    height: auto;
+}
+
+/* Tables */
+.table-responsive {
+    overflow-x: auto;
+    -webkit-overflow-scrolling: touch;
+}
+
+@media (max-width: 768px) {
+    .table-responsive table {
+        min-width: 600px;
+    }
+}
+
+/* Cards */
+.card {
+    word-wrap: break-word;
+}
+
+/* Buttons */
+@media (max-width: 576px) {
+    .btn-group-vertical .btn {
+        width: 100%;
+        margin-bottom: 5px;
+    }
+    
+    .d-grid .btn {
+        width: 100%;
+    }
+}
+
+/* Forms */
+@media (max-width: 768px) {
+    .form-floating > label {
+        font-size: 14px;
+    }
+    
+    .input-group {
+        flex-wrap: wrap;
+    }
+    
+    .input-group > .form-control {
+        min-width: 0;
+        flex: 1 1 auto;
+    }
+}
+
+/* Navigation */
+@media (max-width: 768px) {
+    .nav-tabs {
+        flex-wrap: wrap;
+    }
+    
+    .nav-tabs .nav-link {
+        font-size: 14px;
+        padding: 8px 12px;
+    }
+}
+
+/* Modals */
+@media (max-width: 576px) {
+    .modal-dialog {
+        margin: 10px;
+        max-width: calc(100% - 20px);
+    }
+}
+
+/* Print styles */
+@media print {
+    .sidebar,
+    .mobile-menu-toggle,
+    .btn,
+    .print-btn {
+        display: none !important;
+    }
+    
+    .main-content {
+        margin-left: 0 !important;
+        padding: 0 !important;
+    }
+    
+    body {
+        font-size: 12pt;
+        line-height: 1.4;
+    }
+    
+    .card {
+        border: 1px solid #000;
+        break-inside: avoid;
+    }
+    
+    .table {
+        font-size: 10pt;
+    }
+    
+    .page-break {
+        page-break-before: always;
+    }
+}

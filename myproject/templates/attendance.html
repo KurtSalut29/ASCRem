@@ -1,0 +1,191 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Attendance Management - ASCReM</title>
+<link rel="icon" type="image/png" href="{% static 'images/ASCReM_Logo.png' %}">
+<link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+<link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.5/font/bootstrap-icons.css" rel="stylesheet">
+<link rel="stylesheet" href="{% static 'images/css/attendance.css' %}">
+</head>
+<body>
+
+<aside class="sidebar">
+    <div class="logo">
+        <img src="{% static 'images/ASCReM_Logo.png' %}" alt="ASCReM Logo">
+        <h2>ASCREM</h2>
+    </div>
+    <nav class="nav-links">
+        <a href="{% url 'dashboard' %}"><i class="bi bi-speedometer2"></i> Dashboard</a>
+        <a href="{% url 'class_panel' %}"><i class="bi bi-journal-text"></i> Classes</a>
+        <a href="{% url 'attendance_panel' %}" class="active"><i class="bi bi-calendar-check"></i> Attendance</a>
+        <a href="{% url 'grades_panel' %}"><i class="bi bi-bar-chart-fill"></i> Grades</a>
+        <a href="{% url 'reports_panel' %}"><i class="bi bi-file-earmark-text"></i> Reports</a>
+        <a href="{% url 'profile' %}"><i class="bi bi-person-circle"></i> Profile</a>
+        <a href="{% url 'settings' %}"><i class="bi bi-gear"></i> Settings</a>
+        <a href="{% url 'about' %}"><i class="bi bi-info-circle"></i> About</a>
+        <a href="{% url 'logout' %}"><i class="bi bi-box-arrow-right"></i> Logout</a>
+    </nav>
+</aside>
+
+<div class="main-content">
+    <div class="page-header">
+        <h2><i class="bi bi-calendar-check"></i> Attendance Management</h2>
+        {% if selected_class %}
+        <a href="{% url 'attendance_summary' selected_class.id %}" class="btn btn-primary">
+            <i class="bi bi-graph-up"></i> View Summary
+        </a>
+        {% endif %}
+    </div>
+
+    <!-- Class and Date Selection -->
+    <div class="card">
+        <div class="card-header"><h5><i class="bi bi-funnel"></i> Select Class and Date</h5></div>
+        <div class="card-body">
+            <form method="GET" class="row g-3">
+                <div class="col-md-6">
+                    <label class="form-label">Date</label>
+                    <input type="date" name="date" class="form-control" value="{{ selected_date|date:'Y-m-d' }}" onchange="this.form.submit()">
+                </div>
+                <div class="col-md-6">
+                    <label class="form-label">Select Class</label>
+                    <select name="class_id" class="form-select" onchange="this.form.submit()">
+                        <option value="">Choose a class...</option>
+                        {% for class in classes %}
+                            <option value="{{ class.id }}" {% if selected_class and selected_class.id == class.id %}selected{% endif %}>
+                                {{ class.class_name }} - {{ class.subject }} ({{ class.section }})
+                            </option>
+                        {% endfor %}
+                    </select>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    {% if selected_class %}
+    
+
+    <div class="card">
+        <div class="card-header">
+            <h5><i class="bi bi-people"></i> Attendance for {{ selected_class.class_name }} - {{ selected_date|date:'F d, Y' }}</h5>
+        </div>
+        <div class="card-body p-0">
+            {% if attendance_records %}
+            <form id="attendanceForm">
+                <div class="table-responsive">
+                    <table class="table attendance-table mb-0">
+                        <thead>
+                            <tr>
+                                <th>Student ID</th>
+                                <th>Name</th>
+                                <th>Program</th>
+                                <th>Year Level</th>
+                                <th>Status</th>
+                                <th style="text-align: center;">Actions</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for record in attendance_records %}
+                            <tr>
+                                <td><strong>{{ record.student.student_id }}</strong></td>
+                                <td><strong>{{ record.student.first_name }} {{ record.student.last_name }}</strong></td>
+                                <td>{{ record.student.program }}</td>
+                                <td>{{ record.student.year_level }}</td>
+                                <td>
+                                    <span class="status-badge status-{{ record.status|lower }}" id="status-{{ record.id }}">{{ record.status }}</span>
+                                </td>
+                                <td>
+                                    <div class="btn-group" role="group">
+                                        <button type="button" class="btn btn-sm btn-outline-success attendance-btn {% if record.status == 'Present' %}active{% endif %}" onclick="setStatus({{ record.id }}, 'Present', this)" title="Present">P</button>
+                                        <button type="button" class="btn btn-sm btn-outline-danger attendance-btn {% if record.status == 'Absent' %}active{% endif %}" onclick="setStatus({{ record.id }}, 'Absent', this)" title="Absent">A</button>
+                                        <button type="button" class="btn btn-sm btn-outline-warning attendance-btn {% if record.status == 'Late' %}active{% endif %}" onclick="setStatus({{ record.id }}, 'Late', this)" title="Late">L</button>
+                                        <button type="button" class="btn btn-sm btn-outline-info attendance-btn {% if record.status == 'Excused' %}active{% endif %}" onclick="setStatus({{ record.id }}, 'Excused', this)" title="Excused">E</button>
+                                    </div>
+                                </td>
+                            </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+                <div class="save-container">
+                    <button type="button" class="btn btn-primary" onclick="saveAttendance()">
+                        <i class="bi bi-save"></i> Save Attendance
+                    </button>
+                </div>
+            </form>
+            {% else %}
+            <div class="empty-state text-center py-4">
+                <i class="bi bi-calendar-x"></i>
+                <h4>No Attendance Records</h4>
+                <p>No students enrolled in this class.</p>
+            </div>
+            {% endif %}
+        </div>
+    </div>
+    {% else %}
+    <div class="card">
+        <div class="card-body text-center py-4">
+            <i class="bi bi-calendar-check"></i>
+            <h4>Select a Class to Manage Attendance</h4>
+            <p>Choose a class from the dropdown above to start recording attendance.</p>
+        </div>
+    </div>
+    {% endif %}
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+<script>
+let attendanceData = {};
+
+function setStatus(attendanceId, status, btn) {
+    attendanceData[attendanceId] = status;
+    const statusBadge = document.getElementById('status-' + attendanceId);
+    statusBadge.innerText = status;
+    statusBadge.className = 'status-badge status-' + status.toLowerCase();
+    
+    let btnGroup = btn.parentNode.children;
+    for (let b of btnGroup) b.classList.remove('active');
+    btn.classList.add('active');
+}
+
+function saveAttendance() {
+    if (Object.keys(attendanceData).length === 0) {
+        alert('No changes to save!');
+        return;
+    }
+
+    let updates = [];
+    for (let id in attendanceData) {
+        updates.push({attendance_id: id, status: attendanceData[id]});
+    }
+
+    fetch("{% url 'update_attendance_ajax' %}", {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json',
+            'X-CSRFToken': '{{ csrf_token }}',
+            'X-Requested-With': 'XMLHttpRequest'
+        },
+        body: JSON.stringify({updates: updates})
+    })
+    .then(res => res.json())
+    .then(data => {
+        if (data.success) {
+            alert('Attendance saved successfully!');
+            attendanceData = {};
+            location.reload();
+        } else {
+            alert('Error: ' + data.message);
+        }
+    })
+    .catch(err => {
+        console.error(err);
+        alert('An error occurred while saving attendance.');
+    });
+}
+</script>
+
+</body>
+</html>

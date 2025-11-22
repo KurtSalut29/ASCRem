@@ -1,0 +1,353 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Activity Log - ASCReM</title>
+    <link rel="icon" type="image/png" href="{% static 'images/ASCReM_Logo.png' %}">
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.5/font/bootstrap-icons.css" rel="stylesheet">
+    <link rel="stylesheet" href="{% static 'images/css/responsive.css' %}">
+    <link rel="stylesheet" href="{% static 'images/css/themes.css' %}">
+    <style>
+
+        
+
+        
+        .activity-item {
+            display: flex;
+            align-items: center;
+            padding: 20px;
+            border-bottom: 1px solid #333;
+            transition: background 0.3s ease;
+        }
+        
+        .activity-item:last-child {
+            border-bottom: none;
+        }
+        
+        .activity-item:hover {
+            background: var(--bg-secondary);
+        }
+        
+        .activity-icon {
+            width: 50px;
+            height: 50px;
+            border-radius: 50%;
+            background: var(--primary-color);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin-right: 20px;
+            color: white;
+            font-size: 1.2rem;
+        }
+        
+        .activity-content {
+            flex: 1;
+        }
+        
+        .activity-content h6 {
+            color: var(--text-primary);
+            margin-bottom: 5px;
+            font-weight: 600;
+        }
+        
+        .activity-content p {
+            color: var(--text-secondary);
+            margin: 0;
+            font-size: 0.9rem;
+        }
+        
+        .activity-meta {
+            text-align: right;
+            color: var(--text-muted);
+            font-size: 0.8rem;
+        }
+        
+        .activity-time {
+            margin-bottom: 5px;
+        }
+        
+        .activity-class {
+            background: var(--bg-tertiary);
+            padding: 2px 8px;
+            border-radius: 12px;
+            font-size: 0.7rem;
+        }
+        
+        .filter-section {
+            background: var(--card-bg);
+            border: 1px solid var(--border-color);
+            border-radius: 8px;
+            padding: 20px;
+            margin-bottom: 20px;
+        }
+        
+
+        
+        .empty-state {
+            text-align: center;
+            padding: 60px 20px;
+            color: var(--text-secondary);
+        }
+        
+        .empty-state i {
+            font-size: 4rem;
+            margin-bottom: 20px;
+            color: var(--text-muted);
+        }
+        
+        .pagination {
+            justify-content: center;
+        }
+        
+
+    </style>
+</head>
+<body data-theme="light">
+    <!-- Mobile Menu Toggle -->
+    <button class="mobile-menu-toggle" onclick="toggleSidebar()">
+        <i class="bi bi-list"></i>
+    </button>
+
+    <!-- Theme Toggle -->
+    <button class="theme-toggle" onclick="toggleTheme()" title="Toggle Theme">
+        <i class="bi bi-moon-fill" id="themeIcon"></i>
+    </button>
+
+    <!-- Sidebar -->
+    <aside class="sidebar" id="sidebar">
+        <div class="logo">
+            <img src="{% static 'images/ASCReM_Logo.png' %}" alt="ASCReM Logo">
+            <h2>ASCREM</h2>
+        </div>
+        <nav class="nav-links">
+            <a href="{% url 'dashboard' %}"><i class="bi bi-speedometer2"></i> Dashboard</a>
+            <a href="{% url 'class_panel' %}"><i class="bi bi-journal-text"></i> Classes</a>
+            <a href="{% url 'attendance_panel' %}"><i class="bi bi-calendar-check"></i> Attendance</a>
+            <a href="{% url 'grades_panel' %}"><i class="bi bi-bar-chart-fill"></i> Grades</a>
+            <a href="{% url 'reports_panel' %}"><i class="bi bi-file-earmark-text"></i> Reports</a>
+            <a href="{% url 'profile' %}"><i class="bi bi-person-circle"></i> Profile</a>
+            <a href="{% url 'settings' %}"><i class="bi bi-gear"></i> Settings</a>
+            <a href="{% url 'activity_log' %}" class="active"><i class="bi bi-list-ul"></i> Activity Log</a>
+            <a href="{% url 'about' %}"><i class="bi bi-info-circle"></i> About</a>
+            <a href="{% url 'logout' %}"><i class="bi bi-box-arrow-right"></i> Logout</a>
+        </nav>
+    </aside>
+
+    <!-- Main Content -->
+    <div class="main-content">
+        <div class="d-flex justify-content-between align-items-center mb-4">
+            <h2><i class="bi bi-list-ul"></i> Activity Log</h2>
+            <div class="d-flex gap-2">
+                <button class="btn btn-primary" onclick="refreshLog()">
+                    <i class="bi bi-arrow-clockwise"></i> Refresh
+                </button>
+                <button class="btn btn-primary" onclick="exportLog()">
+                    <i class="bi bi-download"></i> Export
+                </button>
+            </div>
+        </div>
+
+        <!-- Filter Section -->
+        <div class="filter-section">
+            <form method="GET" class="row g-3">
+                <div class="col-md-3">
+                    <label class="form-label">Filter by Action</label>
+                    <select name="action_filter" class="form-select">
+                        <option value="">All Actions</option>
+                        <option value="class">Class Management</option>
+                        <option value="student">Student Management</option>
+                        <option value="attendance">Attendance</option>
+                        <option value="grade">Grade Management</option>
+                        <option value="profile">Profile Updates</option>
+                    </select>
+                </div>
+                <div class="col-md-3">
+                    <label class="form-label">Date From</label>
+                    <input type="date" name="date_from" class="form-control">
+                </div>
+                <div class="col-md-3">
+                    <label class="form-label">Date To</label>
+                    <input type="date" name="date_to" class="form-control">
+                </div>
+                <div class="col-md-3">
+                    <label class="form-label">&nbsp;</label>
+                    <div class="d-grid">
+                        <button type="submit" class="btn btn-primary">
+                            <i class="bi bi-funnel"></i> Filter
+                        </button>
+                    </div>
+                </div>
+            </form>
+        </div>
+
+        <!-- Activity List -->
+        <div class="card">
+            <div class="card-header">
+                <h5 class="mb-0">
+                    <i class="bi bi-clock-history"></i> Recent Activities
+                    <span class="badge bg-warning text-dark ms-2">{{ activities|length }} activities</span>
+                </h5>
+            </div>
+            <div class="card-body p-0">
+                {% if activities %}
+                    {% for activity in activities %}
+                        <div class="activity-item">
+                            <div class="activity-icon">
+                                {% if "class" in activity.action|lower %}
+                                    <i class="bi bi-journal-text"></i>
+                                {% elif "student" in activity.action|lower %}
+                                    <i class="bi bi-person"></i>
+                                {% elif "attendance" in activity.action|lower %}
+                                    <i class="bi bi-calendar-check"></i>
+                                {% elif "grade" in activity.action|lower %}
+                                    <i class="bi bi-bar-chart"></i>
+                                {% elif "profile" in activity.action|lower %}
+                                    <i class="bi bi-person-circle"></i>
+                                {% else %}
+                                    <i class="bi bi-activity"></i>
+                                {% endif %}
+                            </div>
+                            <div class="activity-content">
+                                <h6>{{ activity.action }}</h6>
+                                {% if activity.description %}
+                                    <p>{{ activity.description }}</p>
+                                {% endif %}
+                            </div>
+                            <div class="activity-meta">
+                                <div class="activity-time">
+                                    {{ activity.timestamp|timesince }} ago
+                                </div>
+                                {% if activity.class_obj %}
+                                    <div class="activity-class">
+                                        {{ activity.class_obj.class_name }}
+                                    </div>
+                                {% endif %}
+                            </div>
+                        </div>
+                    {% endfor %}
+                {% else %}
+                    <div class="empty-state">
+                        <i class="bi bi-inbox"></i>
+                        <h4>No Activities Found</h4>
+                        <p>Your activity log is empty. Start using ASCReM to see your activities here.</p>
+                    </div>
+                {% endif %}
+            </div>
+        </div>
+
+        <!-- Pagination -->
+        {% if activities.has_other_pages %}
+            <nav aria-label="Activity log pagination" class="mt-4">
+                <ul class="pagination">
+                    {% if activities.has_previous %}
+                        <li class="page-item">
+                            <a class="page-link" href="?page=1">&laquo; First</a>
+                        </li>
+                        <li class="page-item">
+                            <a class="page-link" href="?page={{ activities.previous_page_number }}">Previous</a>
+                        </li>
+                    {% endif %}
+                    
+                    <li class="page-item active">
+                        <span class="page-link">
+                            Page {{ activities.number }} of {{ activities.paginator.num_pages }}
+                        </span>
+                    </li>
+                    
+                    {% if activities.has_next %}
+                        <li class="page-item">
+                            <a class="page-link" href="?page={{ activities.next_page_number }}">Next</a>
+                        </li>
+                        <li class="page-item">
+                            <a class="page-link" href="?page={{ activities.paginator.num_pages }}">Last &raquo;</a>
+                        </li>
+                    {% endif %}
+                </ul>
+            </nav>
+        {% endif %}
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    <script>
+        function toggleSidebar() {
+            const sidebar = document.getElementById('sidebar');
+            sidebar.classList.toggle('active');
+        }
+
+        document.addEventListener('click', function(event) {
+            const sidebar = document.getElementById('sidebar');
+            const toggle = document.querySelector('.mobile-menu-toggle');
+            
+            if (window.innerWidth <= 768) {
+                if (!sidebar.contains(event.target) && !toggle.contains(event.target)) {
+                    sidebar.classList.remove('active');
+                }
+            }
+        });
+
+        window.addEventListener('resize', function() {
+            const sidebar = document.getElementById('sidebar');
+            if (window.innerWidth > 768) {
+                sidebar.classList.remove('active');
+            }
+        });
+        
+        function toggleTheme() {
+            const currentTheme = document.body.getAttribute('data-theme') || 'light';
+            const newTheme = currentTheme === 'light' ? 'dark' : 'light';
+            
+            document.body.setAttribute('data-theme', newTheme);
+            updateThemeIcon(newTheme);
+            localStorage.setItem('theme', newTheme);
+        }
+        
+        function updateThemeIcon(theme) {
+            const icon = document.getElementById('themeIcon');
+            if (theme === 'dark') {
+                icon.className = 'bi bi-sun-fill';
+            } else {
+                icon.className = 'bi bi-moon-fill';
+            }
+        }
+        
+        document.addEventListener('DOMContentLoaded', function() {
+            const savedTheme = localStorage.getItem('theme') || 'light';
+            document.body.setAttribute('data-theme', savedTheme);
+            updateThemeIcon(savedTheme);
+        });
+        function refreshLog() {
+            location.reload();
+        }
+        
+        function exportLog() {
+            // Create a simple CSV export
+            const activities = document.querySelectorAll('.activity-item');
+            let csvContent = "Action,Description,Timestamp,Class\n";
+            
+            activities.forEach(activity => {
+                const action = activity.querySelector('h6').textContent;
+                const description = activity.querySelector('p') ? activity.querySelector('p').textContent : '';
+                const timestamp = activity.querySelector('.activity-time').textContent;
+                const classInfo = activity.querySelector('.activity-class') ? activity.querySelector('.activity-class').textContent : '';
+                
+                csvContent += `"${action}","${description}","${timestamp}","${classInfo}"\n`;
+            });
+            
+            const blob = new Blob([csvContent], { type: 'text/csv' });
+            const url = window.URL.createObjectURL(blob);
+            const a = document.createElement('a');
+            a.href = url;
+            a.download = 'activity_log.csv';
+            a.click();
+            window.URL.revokeObjectURL(url);
+        }
+        
+        // Auto-refresh every 30 seconds (optional)
+        // setInterval(refreshLog, 30000);
+    </script>
+</body>
+</html>

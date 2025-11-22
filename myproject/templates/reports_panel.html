@@ -1,0 +1,315 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Reports Panel - ASCReM</title>
+    <link rel="icon" type="image/png" href="{% static 'images/ASCReM_Logo.png' %}">
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.5/font/bootstrap-icons.css" rel="stylesheet">
+    <link rel="stylesheet" href="{% static 'images/css/report_panel.css' %}">
+    <link rel="stylesheet" href="{% static 'images/css/responsive.css' %}">
+    <link rel="stylesheet" href="{% static 'images/css/themes.css' %}">
+</head>
+<body data-theme="{{ user_theme|default:'light' }}">
+    <!-- Mobile Menu Toggle -->
+    <button class="mobile-menu-toggle" onclick="toggleSidebar()">
+        <i class="bi bi-list"></i>
+    </button>
+
+    <!-- Theme Toggle -->
+    <button class="theme-toggle" onclick="toggleTheme()" title="Toggle Theme">
+        <i class="bi bi-moon-fill" id="themeIcon"></i>
+    </button>
+
+    <!-- Sidebar -->
+    <aside class="sidebar" id="sidebar">
+        <div class="logo">
+            <img src="{% static 'images/ASCReM_Logo.png' %}" alt="ASCReM Logo">
+            <h2>ASCREM</h2>
+        </div>
+        <nav class="nav-links">
+            <a href="{% url 'dashboard' %}"><i class="bi bi-speedometer2"></i> Dashboard</a>
+            <a href="{% url 'class_panel' %}"><i class="bi bi-journal-text"></i> Classes</a>
+            <a href="{% url 'attendance_panel' %}"><i class="bi bi-calendar-check"></i> Attendance</a>
+            <a href="{% url 'grades_panel' %}"><i class="bi bi-bar-chart-fill"></i> Grades</a>
+            <a href="{% url 'reports_panel' %}" class="active"><i class="bi bi-file-earmark-text"></i> Reports</a>
+            <a href="{% url 'profile' %}"><i class="bi bi-person-circle"></i> Profile</a>
+            <a href="{% url 'settings' %}"><i class="bi bi-gear"></i> Settings</a>
+            <a href="{% url 'about' %}"><i class="bi bi-info-circle"></i> About</a>
+            <a href="{% url 'logout' %}"><i class="bi bi-box-arrow-right"></i> Logout</a>
+        </nav>
+    </aside>
+
+    <!-- Main Content -->
+    <div class="main-content">
+        <div class="page-header">
+            <i class="bi bi-file-earmark-text"></i>
+            <h2>Reports Panel</h2>
+        </div>
+
+        <!-- Class Selection -->
+        <div class="class-selector">
+            <h5><i class="bi bi-funnel"></i> Select Class for Report Generation</h5>
+            <form method="GET" class="row g-3">
+                <div class="col-md-12">
+                    <label class="form-label">Choose Class</label>
+                    <select name="class_id" class="form-select" id="classSelect" onchange="showClassInfo()">
+                        <option value="">Select a class to generate reports...</option>
+                        {% for class in classes %}
+                            <option value="{{ class.id }}" data-class="{{ class.class_name }}" data-subject="{{ class.subject }}" data-section="{{ class.section }}" data-semester="{{ class.semester }}" data-year="{{ class.school_year }}">
+                                {{ class.class_name }} - {{ class.subject }} ({{ class.section }}) - {{ class.semester }} {{ class.school_year }}
+                            </option>
+                        {% endfor %}
+                    </select>
+                </div>
+            </form>
+            
+            <div id="classInfo" class="class-info" style="display: none;">
+                <h6><i class="bi bi-info-circle"></i> Selected Class Information</h6>
+                <p><strong>Class Name:</strong> <span id="className"></span></p>
+                <p><strong>Subject:</strong> <span id="subject"></span></p>
+                <p><strong>Section:</strong> <span id="section"></span></p>
+                <p><strong>Semester:</strong> <span id="semester"></span></p>
+                <p><strong>School Year:</strong> <span id="schoolYear"></span></p>
+            </div>
+        </div>
+
+        <!-- Report Types -->
+        <div class="row">
+            <div class="col-lg-4 col-md-6">
+                <div class="report-card">
+                    <div class="text-center">
+                        <i class="bi bi-calendar-check report-icon text-success"></i>
+                        <h5 class="report-title">Attendance Report</h5>
+                        <p class="report-description">Generate detailed attendance report with student statistics and attendance percentages.</p>
+                        <div class="d-grid gap-2">
+                            <button class="btn btn-success" onclick="generateReport('attendance')" disabled id="attendanceBtn">
+                                <i class="bi bi-file-earmark-pdf"></i> Generate PDF
+                            </button>
+                            <button class="btn btn-info" onclick="generateReport('attendance', 'excel')" disabled id="attendanceExcelBtn">
+                                <i class="bi bi-file-earmark-excel"></i> Generate Excel
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="col-lg-4 col-md-6">
+                <div class="report-card">
+                    <div class="text-center">
+                        <i class="bi bi-bar-chart report-icon text-warning"></i>
+                        <h5 class="report-title">Grade Report</h5>
+                        <p class="report-description">Generate comprehensive grade report with student scores and final grades.</p>
+                        <div class="d-grid gap-2">
+                            <button class="btn btn-success" onclick="generateReport('grades')" disabled id="gradesBtn">
+                                <i class="bi bi-file-earmark-pdf"></i> Generate PDF
+                            </button>
+                            <button class="btn btn-info" onclick="generateReport('grades', 'excel')" disabled id="gradesExcelBtn">
+                                <i class="bi bi-file-earmark-excel"></i> Generate Excel
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="col-lg-4 col-md-6">
+                <div class="report-card">
+                    <div class="text-center">
+                        <i class="bi bi-clipboard-data report-icon text-primary"></i>
+                        <h5 class="report-title">Class Summary</h5>
+                        <p class="report-description">Generate comprehensive class summary with attendance, grades, and statistics.</p>
+                        <div class="d-grid gap-2">
+                            <button class="btn btn-success" onclick="generateReport('summary')" disabled id="summaryBtn">
+                                <i class="bi bi-file-earmark-pdf"></i> Generate PDF
+                            </button>
+                            <button class="btn btn-info" onclick="generateReport('summary', 'excel')" disabled id="summaryExcelBtn">
+                                <i class="bi bi-file-earmark-excel"></i> Generate Excel
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Report Generation Instructions -->
+        <div class="card">
+            <div class="card-header">
+                <h5><i class="bi bi-info-circle"></i> Report Generation Instructions</h5>
+            </div>
+            <div class="card-body">
+                <div class="row">
+                    <div class="col-md-4 instructions-section">
+                        <h6><i class="bi bi-calendar-check"></i> Attendance Report</h6>
+                        <ul class="instructions-list">
+                            <li><i class="bi bi-check-circle text-success"></i> Student attendance statistics</li>
+                            <li><i class="bi bi-check-circle text-success"></i> Present/Absent/Late/Excused counts</li>
+                            <li><i class="bi bi-check-circle text-success"></i> Attendance percentages</li>
+                            <li><i class="bi bi-check-circle text-success"></i> Students at risk list</li>
+                        </ul>
+                    </div>
+                    <div class="col-md-4 instructions-section">
+                        <h6><i class="bi bi-bar-chart"></i> Grade Report</h6>
+                        <ul class="instructions-list">
+                            <li><i class="bi bi-check-circle text-success"></i> Individual student scores</li>
+                            <li><i class="bi bi-check-circle text-success"></i> Final grade calculations</li>
+                            <li><i class="bi bi-check-circle text-success"></i> Pass/Fail status</li>
+                            <li><i class="bi bi-check-circle text-success"></i> Grade distribution charts</li>
+                        </ul>
+                    </div>
+                    <div class="col-md-4 instructions-section">
+                        <h6><i class="bi bi-clipboard-data"></i> Class Summary</h6>
+                        <ul class="instructions-list">
+                            <li><i class="bi bi-check-circle text-success"></i> Combined attendance & grades</li>
+                            <li><i class="bi bi-check-circle text-success"></i> Class statistics</li>
+                            <li><i class="bi bi-check-circle text-success"></i> Performance analysis</li>
+                            <li><i class="bi bi-check-circle text-success"></i> Comprehensive overview</li>
+                        </ul>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    <script>
+        function showClassInfo() {
+            const select = document.getElementById('classSelect');
+            const classInfo = document.getElementById('classInfo');
+            const selectedOption = select.options[select.selectedIndex];
+            
+            if (select.value) {
+                document.getElementById('className').textContent = selectedOption.dataset.class;
+                document.getElementById('subject').textContent = selectedOption.dataset.subject;
+                document.getElementById('section').textContent = selectedOption.dataset.section;
+                document.getElementById('semester').textContent = selectedOption.dataset.semester;
+                document.getElementById('schoolYear').textContent = selectedOption.dataset.year;
+                
+                classInfo.style.display = 'block';
+                
+                // Enable all report buttons
+                document.getElementById('attendanceBtn').disabled = false;
+                document.getElementById('attendanceExcelBtn').disabled = false;
+                document.getElementById('gradesBtn').disabled = false;
+                document.getElementById('gradesExcelBtn').disabled = false;
+                document.getElementById('summaryBtn').disabled = false;
+                document.getElementById('summaryExcelBtn').disabled = false;
+            } else {
+                classInfo.style.display = 'none';
+                
+                // Disable all report buttons
+                document.getElementById('attendanceBtn').disabled = true;
+                document.getElementById('attendanceExcelBtn').disabled = true;
+                document.getElementById('gradesBtn').disabled = true;
+                document.getElementById('gradesExcelBtn').disabled = true;
+                document.getElementById('summaryBtn').disabled = true;
+                document.getElementById('summaryExcelBtn').disabled = true;
+            }
+        }
+        
+        function generateReport(type, format = 'pdf') {
+            const classId = document.getElementById('classSelect').value;
+            if (!classId) {
+                alert('Please select a class first.');
+                return;
+            }
+            
+            let url = '';
+            if (format === 'pdf') {
+                if (type === 'attendance') {
+                    url = `/reports/attendance/${classId}/pdf/`;
+                } else if (type === 'grades') {
+                    url = `/reports/grades/${classId}/pdf/`;
+                } else if (type === 'summary') {
+                    url = `/reports/summary/${classId}/pdf/`;
+                }
+            } else {
+                if (type === 'attendance') {
+                    url = `/reports/attendance/${classId}/excel/`;
+                } else if (type === 'grades') {
+                    url = `/reports/grades/${classId}/excel/`;
+                } else if (type === 'summary') {
+                    url = `/reports/summary/${classId}/excel/`;
+                }
+            }
+            
+            // Open in new window for download
+            window.open(url, '_blank');
+        }
+        
+        function toggleSidebar() {
+            const sidebar = document.getElementById('sidebar');
+            sidebar.classList.toggle('active');
+        }
+
+        document.addEventListener('click', function(event) {
+            const sidebar = document.getElementById('sidebar');
+            const toggle = document.querySelector('.mobile-menu-toggle');
+            
+            if (window.innerWidth <= 768) {
+                if (!sidebar.contains(event.target) && !toggle.contains(event.target)) {
+                    sidebar.classList.remove('active');
+                }
+            }
+        });
+
+        window.addEventListener('resize', function() {
+            const sidebar = document.getElementById('sidebar');
+            if (window.innerWidth > 768) {
+                sidebar.classList.remove('active');
+            }
+        });
+        
+        // Theme functionality
+        function toggleTheme() {
+            const currentTheme = document.body.getAttribute('data-theme') || 'light';
+            const newTheme = currentTheme === 'light' ? 'dark' : 'light';
+            
+            document.body.setAttribute('data-theme', newTheme);
+            updateThemeIcon(newTheme);
+            
+            // Save theme to server
+            fetch('{% url "settings" %}', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/x-www-form-urlencoded',
+                    'X-Requested-With': 'XMLHttpRequest',
+                    'X-CSRFToken': getCookie('csrftoken')
+                },
+                body: 'theme=' + newTheme
+            });
+        }
+        
+        function updateThemeIcon(theme) {
+            const icon = document.getElementById('themeIcon');
+            if (theme === 'dark') {
+                icon.className = 'bi bi-sun-fill';
+            } else {
+                icon.className = 'bi bi-moon-fill';
+            }
+        }
+        
+        function getCookie(name) {
+            let cookieValue = null;
+            if (document.cookie && document.cookie !== '') {
+                const cookies = document.cookie.split(';');
+                for (let i = 0; i < cookies.length; i++) {
+                    const cookie = cookies[i].trim();
+                    if (cookie.substring(0, name.length + 1) === (name + '=')) {
+                        cookieValue = decodeURIComponent(cookie.substring(name.length + 1));
+                        break;
+                    }
+                }
+            }
+            return cookieValue;
+        }
+        
+        // Initialize theme icon
+        document.addEventListener('DOMContentLoaded', function() {
+            const currentTheme = document.body.getAttribute('data-theme') || 'light';
+            updateThemeIcon(currentTheme);
+        });
+    </script>
+</body>
+</html>

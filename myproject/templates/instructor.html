@@ -1,0 +1,41 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Manage Instructors</title>
+</head>
+<body>
+    <h2>Add Instructor</h2>
+    <form method="post">
+        {% csrf_token %}
+        {{ form.as_p }}
+        <button type="submit">Save Instructor</button>
+    </form>
+
+    <hr>
+
+    <h2>Instructor List</h2>
+    <table border="1">
+        <thead>
+            <tr>
+                <th>Instructor ID</th>
+                <th>Full Name</th>
+                <th>Email</th>
+                <th>Status</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for instructor in instructors %}
+            <tr>
+                <td>{{ instructor.instructor_id }}</td>
+                <td>{{ instructor.full_name }}</td>
+                <td>{{ instructor.email }}</td>
+                <td>{{ instructor.status }}</td>
+            </tr>
+            {% empty %}
+            <tr><td colspan="4">No instructors found.</td></tr>
+            {% endfor %}
+        </tbody>
+    </table>
+</body>
+</html>

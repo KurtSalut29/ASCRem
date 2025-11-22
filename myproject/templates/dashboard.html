@@ -1,0 +1,744 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>ASCReM Dashboard</title>
+  <link rel="icon" type="image/png" href="{% static 'images/ASCReM_Logo.png' %}">
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.5/font/bootstrap-icons.css" rel="stylesheet">
+  <link rel="stylesheet" href="{% static 'images/css/dashboard.css' %}">
+  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+  <style>
+    /* Mobile Hamburger Menu */
+    .mobile-header {
+      display: none;
+      position: fixed;
+      top: 0;
+      left: 0;
+      right: 0;
+      height: 60px;
+      background: linear-gradient(180deg, #0d122e 0%, #0a0f1f 100%);
+      z-index: 1001;
+      padding: 0 15px;
+      align-items: center;
+      justify-content: space-between;
+      box-shadow: 0 2px 10px rgba(0, 0, 0, 0.5);
+      border-bottom: 1px solid rgba(255, 215, 0, 0.2);
+    }
+
+    .mobile-logo {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+
+    .mobile-logo img {
+      width: 40px;
+      filter: drop-shadow(0 2px 6px rgba(255, 215, 0, 0.4));
+    }
+
+    .mobile-logo h2 {
+      font-size: 1.2rem;
+      color: #ffd700;
+      margin: 0;
+      font-weight: 800;
+      letter-spacing: 1px;
+    }
+
+    .hamburger {
+      width: 30px;
+      height: 25px;
+      position: relative;
+      cursor: pointer;
+      z-index: 1002;
+    }
+
+    .hamburger span {
+      display: block;
+      position: absolute;
+      height: 3px;
+      width: 100%;
+      background: #ffd700;
+      border-radius: 3px;
+      opacity: 1;
+      left: 0;
+      transform: rotate(0deg);
+      transition: .25s ease-in-out;
+    }
+
+    .hamburger span:nth-child(1) {
+      top: 0px;
+    }
+
+    .hamburger span:nth-child(2) {
+      top: 10px;
+    }
+
+    .hamburger span:nth-child(3) {
+      top: 20px;
+    }
+
+    .hamburger.active span:nth-child(1) {
+      top: 10px;
+      transform: rotate(135deg);
+    }
+
+    .hamburger.active span:nth-child(2) {
+      opacity: 0;
+      left: -60px;
+    }
+
+    .hamburger.active span:nth-child(3) {
+      top: 10px;
+      transform: rotate(-135deg);
+    }
+
+    /* Sidebar overlay for mobile */
+    .sidebar-overlay {
+      display: none;
+      position: fixed;
+      top: 0;
+      left: 0;
+      right: 0;
+      bottom: 0;
+      background: rgba(0, 0, 0, 0.7);
+      z-index: 1001;
+      opacity: 0;
+      transition: opacity 0.3s ease;
+    }
+
+    .sidebar-overlay.active {
+      display: block;
+      opacity: 1;
+    }
+
+    /* Responsive adjustments */
+    @media (max-width: 768px) {
+      .mobile-header {
+        display: flex;
+      }
+
+      .sidebar {
+        transform: translateX(-100%);
+        transition: transform 0.3s ease;
+        z-index: 1002;
+        top: 0;
+        height: 100vh;
+      }
+
+      .sidebar.active {
+        transform: translateX(0);
+      }
+
+      .main {
+        margin-left: 0;
+        padding-top: 75px;
+      }
+    }
+
+    /* Small Mobile - 320px */
+    @media (max-width: 320px) {
+      .hero h1 {
+        font-size: 1.2rem;
+      }
+
+      .hero p {
+        font-size: 0.75rem;
+      }
+
+      .card {
+        padding: 0.8rem;
+      }
+
+      .card i {
+        font-size: 1.8rem;
+      }
+
+      .card h6 {
+        font-size: 0.7rem;
+      }
+
+      .card h3 {
+        font-size: 1.4rem;
+      }
+
+      .chart-container {
+        height: 250px;
+        padding: 0.8rem;
+      }
+
+      .chart-title {
+        font-size: 0.9rem;
+      }
+
+      .table th, .table td {
+        font-size: 0.7rem;
+        padding: 6px 4px;
+      }
+
+      .activity-content h6 {
+        font-size: 0.75rem;
+      }
+
+      .activity-content p {
+        font-size: 0.7rem;
+      }
+
+      .activity-time {
+        font-size: 0.65rem;
+      }
+    }
+
+    /* Medium Mobile - 375px */
+    @media (min-width: 321px) and (max-width: 375px) {
+      .hero h1 {
+        font-size: 1.3rem;
+      }
+
+      .hero p {
+        font-size: 0.8rem;
+      }
+
+      .card {
+        padding: 0.9rem;
+      }
+
+      .card i {
+        font-size: 2rem;
+      }
+
+      .card h6 {
+        font-size: 0.75rem;
+      }
+
+      .card h3 {
+        font-size: 1.5rem;
+      }
+
+      .chart-container {
+        height: 270px;
+        padding: 0.9rem;
+      }
+
+      .chart-title {
+        font-size: 0.95rem;
+      }
+
+      .table th, .table td {
+        font-size: 0.75rem;
+        padding: 7px 5px;
+      }
+    }
+
+    /* Large Mobile - 425px */
+    @media (min-width: 376px) and (max-width: 425px) {
+      .hero h1 {
+        font-size: 1.4rem;
+      }
+
+      .hero p {
+        font-size: 0.85rem;
+      }
+
+      .card {
+        padding: 1rem;
+      }
+
+      .card i {
+        font-size: 2.1rem;
+      }
+
+      .card h3 {
+        font-size: 1.6rem;
+      }
+
+      .chart-container {
+        height: 280px;
+      }
+
+      .chart-title {
+        font-size: 1rem;
+      }
+    }
+
+    /* Tablet - 768px */
+    @media (min-width: 426px) and (max-width: 768px) {
+      .grid {
+        grid-template-columns: repeat(2, 1fr);
+      }
+
+      .hero h1 {
+        font-size: 1.6rem;
+      }
+
+      .card h3 {
+        font-size: 1.8rem;
+      }
+
+      .chart-container {
+        height: 320px;
+      }
+    }
+
+    /* Laptop - 1024px */
+    @media (min-width: 769px) and (max-width: 1024px) {
+      .sidebar {
+        width: 220px;
+      }
+
+      .main {
+        margin-left: 220px;
+        padding: 1.3rem;
+      }
+
+      .grid {
+        grid-template-columns: repeat(4, 1fr);
+      }
+
+      .card h3 {
+        font-size: 1.9rem;
+      }
+    }
+
+    /* All mobile devices */
+    @media (max-width: 768px) {
+      .grid {
+        grid-template-columns: 1fr 1fr;
+        gap: 0.8rem;
+      }
+
+      .main {
+        padding: 1rem;
+      }
+
+      .hero {
+        padding: 1rem;
+        margin-bottom: 10px;
+        margin-top: 50px;
+      }
+
+      .chart-container,
+      .table-container {
+        margin-bottom: 1rem;
+      }
+
+      .activity-icon {
+        width: 32px;
+        height: 32px;
+      }
+
+      .activity-icon i {
+        font-size: 0.9rem;
+      }
+
+      .badge {
+        font-size: 0.65rem;
+        padding: 4px 8px;
+      }
+
+      footer {
+        font-size: 0.7rem;
+        margin-top: 1rem;
+        padding: 0.8rem;
+      }
+    }
+
+    /* Extra small devices - single column */
+    @media (max-width: 425px) {
+      .grid {
+        grid-template-columns: 1fr;
+      }
+
+      .row > div {
+        margin-bottom: 1rem;
+      }
+    }
+  </style>
+</head>
+<body>
+  <!-- Mobile Header with Hamburger -->
+  <div class="mobile-header">
+    <div class="mobile-logo">
+      <img src="{% static 'images/ASCReM_Logo.png' %}" alt="ASCReM Logo">
+      <h2>ASCREM</h2>
+    </div>
+    <div class="hamburger" id="hamburger">
+      <span></span>
+      <span></span>
+      <span></span>
+    </div>
+  </div>
+
+  <!-- Sidebar Overlay -->
+  <div class="sidebar-overlay" id="sidebarOverlay"></div>
+
+  <!-- Sidebar -->
+  <aside class="sidebar" id="sidebar">
+    <div class="logo">
+     <img src="{% static 'images/ASCReM_Logo.png' %}" alt="ASCReM Logo">
+      <h2>ASCREM</h2>
+    </div>
+    <nav class="nav-links">
+      <a href="{% url 'dashboard' %}" class="active"><i class="bi bi-speedometer2"></i> Dashboard</a>
+      <a href="{% url 'class_panel' %}"><i class="bi bi-journal-text"></i> Classes</a>
+      <a href="{% url 'attendance_panel' %}"><i class="bi bi-calendar-check"></i> Attendance</a>
+      <a href="{% url 'grades_panel' %}"><i class="bi bi-bar-chart-fill"></i> Grades</a>
+      <a href="{% url 'reports_panel' %}"><i class="bi bi-file-earmark-text"></i> Reports</a>
+      <a href="{% url 'profile' %}"><i class="bi bi-person-circle"></i> Profile</a>
+      <a href="{% url 'settings' %}"><i class="bi bi-gear"></i> Settings</a>
+      <a href="{% url 'about' %}"><i class="bi bi-info-circle"></i> About</a>
+      <a href="{% url 'logout' %}"><i class="bi bi-box-arrow-right"></i> Logout</a>
+    </nav>
+  </aside>
+
+  <!-- Main Content -->
+  <main class="main">
+    <section class="hero">
+      <h1>Welcome to ASCReM Dashboard</h1>
+      <p>Automated Student Class Record Monitoring – manage classes, track students, and monitor grades with efficiency and style.</p>
+    </section>
+
+    <!-- Statistics Cards -->
+    <div class="grid">
+      <div class="card">
+        <i class="bi bi-collection"></i>
+        <h6>Total Classes</h6>
+        <h3>{{ total_classes }}</h3>
+      </div>
+
+      <div class="card">
+        <i class="bi bi-people-fill"></i>
+        <h6>Total Students</h6>
+        <h3>{{ total_students }}</h3>
+      </div>
+
+      <div class="card">
+        <i class="bi bi-hourglass-split"></i>
+        <h6>Pending Grades</h6>
+        <h3>{{ pending_grades }}</h3>
+      </div>
+
+      <div class="card">
+        <i class="bi bi-calendar-check"></i>
+        <h6>Attendance Rate</h6>
+        <h3>{{ attendance_percentage }}%</h3>
+      </div>
+    </div>
+
+    <div class="row">
+      <!-- Attendance Chart -->
+      <div class="col-lg-6">
+        <div class="chart-container">
+          <h5 class="chart-title">Attendance Overview</h5>
+          <div class="chart-wrapper">
+            <canvas id="attendanceChart"></canvas>
+          </div>
+        </div>
+      </div>
+
+      <!-- Class Distribution Chart -->
+      <div class="col-lg-6">
+        <div class="chart-container">
+          <h5 class="chart-title">Classes by Semester</h5>
+          <div class="chart-wrapper">
+            <canvas id="classChart"></canvas>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="row">
+      <!-- Top Performing Students -->
+      <div class="col-lg-6">
+        <div class="table-container">
+          <h5 class="chart-title">Top Performing Students</h5>
+          {% if top_students %}
+            <div class="table-responsive">
+              <table class="table">
+                <thead>
+                  <tr>
+                    <th>Student</th>
+                    <th>Class</th>
+                    <th>Grade</th>
+                    <th>Status</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {% for grade in top_students %}
+                    <tr>
+                      <td>{{ grade.student.first_name }} {{ grade.student.last_name }}</td>
+                      <td>{{ grade.class_obj.class_name }}</td>
+                      <td>{{ grade.final_grade|floatformat:2 }}</td>
+                      <td>
+                        <span class="badge bg-success">{{ grade.remarks|default:"Excellent" }}</span>
+                      </td>
+                    </tr>
+                  {% endfor %}
+                </tbody>
+              </table>
+            </div>
+          {% else %}
+            <p class="text-muted">No grade data available yet.</p>
+          {% endif %}
+        </div>
+      </div>
+
+      <!-- Dropping List -->
+      <div class="col-lg-6">
+        <div class="table-container">
+          <h5 class="chart-title">Students at Risk</h5>
+          {% if dropping_list %}
+            <div class="table-responsive">
+              <table class="table">
+                <thead>
+                  <tr>
+                    <th>Student</th>
+                    <th>Class</th>
+                    <th>Absence Rate</th>
+                    <th>Status</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {% for item in dropping_list %}
+                    <tr>
+                      <td>{{ item.student.first_name }} {{ item.student.last_name }}</td>
+                      <td>{{ item.class.class_name }}</td>
+                      <td>{{ item.absence_rate }}%</td>
+                      <td>
+                        <span class="badge bg-danger">At Risk</span>
+                      </td>
+                    </tr>
+                  {% endfor %}
+                </tbody>
+              </table>
+            </div>
+          {% else %}
+            <p class="text-muted">No students at risk currently.</p>
+          {% endif %}
+        </div>
+      </div>
+    </div>
+
+    <div class="row">
+      <!-- Recent Activities -->
+      <div class="col-lg-8">
+        <div class="table-container">
+          <h5 class="chart-title">Recent Activities</h5>
+          {% if recent_activities %}
+            {% for activity in recent_activities %}
+              <div class="activity-item">
+                <div class="activity-icon">
+                  <i class="bi bi-activity"></i>
+                </div>
+                <div class="activity-content">
+                  <h6>{{ activity.action }}</h6>
+                  <p>{{ activity.description }}</p>
+                </div>
+                <div class="activity-time">
+                  {{ activity.timestamp|timesince }} ago
+                </div>
+              </div>
+            {% endfor %}
+          {% else %}
+            <p class="text-muted">No recent activities.</p>
+          {% endif %}
+        </div>
+      </div>
+
+      <!-- Recent Classes -->
+      <div class="col-lg-4">
+        <div class="table-container">
+          <h5 class="chart-title">Recent Classes</h5>
+          {% if recent_classes %}
+            {% for class in recent_classes %}
+              <div class="activity-item">
+                <div class="activity-icon">
+                  <i class="bi bi-journal-text"></i>
+                </div>
+                <div class="activity-content">
+                  <h6>{{ class.class_name }}</h6>
+                  <p>{{ class.subject }} - {{ class.section }}</p>
+                </div>
+              </div>
+            {% endfor %}
+          {% else %}
+            <p class="text-muted">No classes created yet.</p>
+          {% endif %}
+        </div>
+      </div>
+    </div>
+
+    <footer>
+      © 2025 ASCReM. All rights reserved.
+    </footer>
+  </main>
+
+  <script>
+    // Mobile Menu Toggle
+    const hamburger = document.getElementById('hamburger');
+    const sidebar = document.getElementById('sidebar');
+    const sidebarOverlay = document.getElementById('sidebarOverlay');
+
+    function toggleMenu() {
+      hamburger.classList.toggle('active');
+      sidebar.classList.toggle('active');
+      sidebarOverlay.classList.toggle('active');
+      document.body.style.overflow = sidebar.classList.contains('active') ? 'hidden' : '';
+    }
+
+    hamburger.addEventListener('click', toggleMenu);
+    sidebarOverlay.addEventListener('click', toggleMenu);
+
+    // Close menu when clicking on a nav link (mobile)
+    const navLinks = document.querySelectorAll('.nav-links a');
+    navLinks.forEach(link => {
+      link.addEventListener('click', () => {
+        if (window.innerWidth <= 768) {
+          toggleMenu();
+        }
+      });
+    });
+
+    // Attendance Chart - Improved Doughnut
+    const attendanceCtx = document.getElementById('attendanceChart').getContext('2d');
+    new Chart(attendanceCtx, {
+      type: 'doughnut',
+      data: {
+        labels: ['Present', 'Absent', 'Late', 'Excused'],
+        datasets: [{
+          data: [{{ present_count|default:0 }}, {{ absent_count|default:0 }}, {{ late_count|default:0 }}, {{ excused_count|default:0 }}],
+          backgroundColor: [
+            'rgba(40, 167, 69, 0.9)',
+            'rgba(220, 53, 69, 0.9)',
+            'rgba(255, 193, 7, 0.9)',
+            'rgba(23, 162, 184, 0.9)'
+          ],
+          borderColor: [
+            '#28a745',
+            '#dc3545',
+            '#ffc107',
+            '#17a2b8'
+          ],
+          borderWidth: 3,
+          hoverOffset: 15
+        }]
+      },
+      options: {
+        responsive: true,
+        maintainAspectRatio: true,
+        aspectRatio: window.innerWidth <= 425 ? 1.2 : 1.5,
+        plugins: {
+          legend: {
+            position: 'bottom',
+            labels: {
+              color: '#fff',
+              font: {
+                size: window.innerWidth <= 375 ? 9 : 11,
+                weight: '600'
+              },
+              padding: window.innerWidth <= 375 ? 6 : 10,
+              boxWidth: window.innerWidth <= 375 ? 12 : 15,
+              boxHeight: window.innerWidth <= 375 ? 12 : 15
+            }
+          },
+          tooltip: {
+            backgroundColor: 'rgba(13, 18, 46, 0.95)',
+            titleColor: '#ffd700',
+            bodyColor: '#fff',
+            borderColor: '#ffd700',
+            borderWidth: 1,
+            padding: 12,
+            displayColors: true,
+            callbacks: {
+              label: function(context) {
+                let label = context.label || '';
+                let value = context.parsed || 0;
+                let total = context.dataset.data.reduce((a, b) => a + b, 0);
+                let percentage = ((value / total) * 100).toFixed(1);
+                return label + ': ' + value + ' (' + percentage + '%)';
+              }
+            }
+          }
+        },
+        cutout: '65%'
+      }
+    });
+
+    // Class Distribution Chart - Improved Bar
+    const classCtx = document.getElementById('classChart').getContext('2d');
+    const classData = {{ class_distribution|safe }};
+    new Chart(classCtx, {
+      type: 'bar',
+      data: {
+        labels: classData.map(item => item.semester || 'No Semester'),
+        datasets: [{
+          label: 'Classes',
+          data: classData.map(item => item.count),
+          backgroundColor: 'rgba(255, 215, 0, 0.85)',
+          borderColor: '#ffd700',
+          borderWidth: 2,
+          borderRadius: 8,
+          borderSkipped: false,
+          hoverBackgroundColor: '#ffed4e',
+          hoverBorderColor: '#ffed4e',
+          hoverBorderWidth: 3
+        }]
+      },
+      options: {
+        responsive: true,
+        maintainAspectRatio: true,
+        aspectRatio: window.innerWidth <= 425 ? 1.2 : 1.5,
+        plugins: {
+          legend: {
+            labels: {
+              color: '#fff',
+              font: {
+                size: window.innerWidth <= 375 ? 9 : 11,
+                weight: '600'
+              },
+              padding: window.innerWidth <= 375 ? 6 : 10
+            }
+          },
+          tooltip: {
+            backgroundColor: 'rgba(13, 18, 46, 0.95)',
+            titleColor: '#ffd700',
+            bodyColor: '#fff',
+            borderColor: '#ffd700',
+            borderWidth: 1,
+            padding: 12
+          }
+        },
+        scales: {
+          y: {
+            beginAtZero: true,
+            ticks: {
+              color: '#fff',
+              font: {
+                size: window.innerWidth <= 375 ? 9 : 11
+              },
+              stepSize: 1
+            },
+            grid: {
+              color: 'rgba(255, 215, 0, 0.1)',
+              lineWidth: 1
+            }
+          },
+          x: {
+            ticks: {
+              color: '#fff',
+              font: {
+                size: window.innerWidth <= 375 ? 9 : 11
+              }
+            },
+            grid: {
+              display: false
+            }
+          }
+        }
+      }
+    });
+  </script>
+</body>
+</html>

@@ -1,0 +1,87 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>Instructor Registration - ASCREM</title>
+</head>
+
+<body>
+  <div class="register-container">
+
+    <!-- LEFT PANEL -->
+    <div class="left-panel">
+      <img src="{% static 'images/ascrem_logo.png' %}" alt="ASCREM Logo">
+      <h3>AUTOMATED STUDENT CLASS RECORD MONITORING WEB APPLICATION</h3>
+      <ul class="feature-list">
+        <li>Automated Attendance Tracking</li>
+        <li>Easy Score Input & Grade Computation</li>
+        <li>Real-Time Class Monitoring</li>
+        <li>Instant Report Generation</li>
+        <li>Secure Faculty Login & Data Protection</li>
+      </ul>
+    </div>
+
+    <!-- RIGHT PANEL -->
+    <div class="right-panel">
+      <h2>Create Your Instructor Account</h2>
+
+      {% if register_form.errors %}
+      <div class="alert">
+        {% for field, errors in register_form.errors.items %}
+          {% for error in errors %}
+            <p>{{ field|title }}: {{ error }}</p>
+          {% endfor %}
+        {% endfor %}
+      </div>
+      {% endif %}
+
+      {% if messages %}
+        {% for message in messages %}
+          <div class="alert">{{ message }}</div>
+        {% endfor %}
+      {% endif %}
+
+      <form method="post">
+        {% csrf_token %}
+
+        <!-- Username -->
+        <div class="input-group">
+          <div class="input-icon">👤</div>
+          {{ register_form.username }}
+        </div>
+
+        <!-- Instructor ID -->
+        <div class="input-group">
+          <div class="input-icon">🆔</div>
+          {{ register_form.instructor_id }}
+        </div>
+
+        <!-- Email -->
+        <div class="input-group">
+          <div class="input-icon">✉️</div>
+          {{ register_form.email }}
+        </div>
+
+        <!-- Password -->
+        <div class="input-group">
+          <div class="input-icon">🔒</div>
+          {{ register_form.password1 }}
+        </div>
+
+        <!-- Confirm Password -->
+        <div class="input-group">
+          <div class="input-icon">🔐</div>
+          {{ register_form.password2 }}
+        </div>
+
+        <button type="submit" class="btn-register">Register</button>
+
+        <div class="login-link">
+          Already have an account? <a href="{% url 'login' %}">Login here</a>
+        </div>
+      </form>
+    </div>
+  </div>
+</body>
+</html>

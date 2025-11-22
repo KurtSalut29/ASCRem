@@ -1,0 +1,47 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Manage Scores</title>
+</head>
+<body>
+    <h2>Add Student Score</h2>
+    <form method="post">
+        {% csrf_token %}
+        {{ form.as_p }}
+        <button type="submit">Save Score</button>
+    </form>
+
+    <hr>
+
+    <h2>Scores</h2>
+    <table border="1">
+        <thead>
+            <tr>
+                <th>Student</th>
+                <th>Class</th>
+                <th>Quiz 1</th>
+                <th>Quiz 2</th>
+                <th>Assignment</th>
+                <th>Exam</th>
+                <th>Final Grade</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for score in scores %}
+            <tr>
+                <td>{{ score.student.full_name }}</td>
+                <td>{{ score.class_obj.class_name }}</td>
+                <td>{{ score.quiz1 }}</td>
+                <td>{{ score.quiz2 }}</td>
+                <td>{{ score.assignment }}</td>
+                <td>{{ score.exam }}</td>
+                <td>{{ score.final_grade }}</td>
+            </tr>
+            {% empty %}
+            <tr><td colspan="7">No scores found.</td></tr>
+            {% endfor %}
+        </tbody>
+    </table>
+</body>
+</html>

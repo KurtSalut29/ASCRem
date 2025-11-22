@@ -1,0 +1,307 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Attendance Summary - ASCReM</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.5/font/bootstrap-icons.css" rel="stylesheet">
+    <link rel="icon" type="image/png" href="{% static 'images/ASCReM_Logo.png' %}">
+    <link rel="stylesheet" href="{% static 'images/css/attendance_summary.css' %}">
+</head>
+<body>
+    <!-- Sidebar -->
+    <aside class="sidebar">
+        <div class="logo">
+            <img src="{% static 'images/ASCReM_Logo.png' %}" alt="ASCReM Logo">
+            <h2>ASCREM</h2>
+        </div>
+        <nav class="nav-links">
+            <a href="{% url 'dashboard' %}"><i class="bi bi-speedometer2"></i> Dashboard</a>
+            <a href="{% url 'class_panel' %}"><i class="bi bi-journal-text"></i> Classes</a>
+            <a href="{% url 'attendance_panel' %}" class="active"><i class="bi bi-calendar-check"></i> Attendance</a>
+            <a href="{% url 'grades_panel' %}"><i class="bi bi-bar-chart-fill"></i> Grades</a>
+            <a href="{% url 'reports_panel' %}"><i class="bi bi-file-earmark-text"></i> Reports</a>
+            <a href="{% url 'profile' %}"><i class="bi bi-person-circle"></i> Profile</a>
+            <a href="{% url 'settings' %}"><i class="bi bi-gear"></i> Settings</a>
+            <a href="{% url 'about' %}"><i class="bi bi-info-circle"></i> About</a>
+            <a href="{% url 'logout' %}"><i class="bi bi-box-arrow-right"></i> Logout</a>
+        </nav>
+    </aside>
+
+    <!-- Main Content -->
+    <div class="main-content">
+        <div class="page-header">
+            <h2>
+                <i class="bi bi-graph-up"></i>
+                Attendance Summary - {{ class_obj.class_name }}
+            </h2>
+            <div class="action-buttons">
+                <a href="{% url 'attendance_panel' %}" class="btn btn-secondary">
+                    <i class="bi bi-arrow-left"></i> Back
+                </a>
+                <button class="btn btn-primary" onclick="exportToPDF()">
+                    <i class="bi bi-file-earmark-pdf"></i> Export PDF
+                </button>
+                <button class="btn btn-primary" onclick="exportToExcel()">
+                    <i class="bi bi-file-earmark-excel"></i> Export Excel
+                </button>
+            </div>
+        </div>
+
+        <!-- Summary Statistics -->
+        <div class="row mb-4">
+            <div class="col-md-3">
+                <div class="stats-card">
+                    <div class="stats-number">{{ attendance_stats|length }}</div>
+                    <div class="stats-label">Total Students</div>
+                </div>
+            </div>
+            <div class="col-md-3">
+                <div class="stats-card">
+                    <div class="stats-number">
+                        {% if attendance_stats %}
+                            {{ attendance_stats.0.total_days|default:0 }}
+                        {% else %}
+                            0
+                        {% endif %}
+                    </div>
+                    <div class="stats-label">Total Class Days</div>
+                </div>
+            </div>
+            <div class="col-md-3">
+                <div class="stats-card">
+                    <div class="stats-number">
+                        {% if attendance_stats %}
+                            {% widthratio attendance_stats|length 1 1 as total_students %}
+                            {% for stat in attendance_stats %}
+                                {% if stat.attendance_percentage >= 90 %}
+                                    {% widthratio stat.attendance_percentage 1 1 as excellent_count %}
+                                {% endif %}
+                            {% endfor %}
+                            {{ excellent_count|default:0 }}
+                        {% else %}
+                            0
+                        {% endif %}
+                    </div>
+                    <div class="stats-label">Excellent (≥90%)</div>
+                </div>
+            </div>
+            <div class="col-md-3">
+                <div class="stats-card">
+                    <div class="stats-number">
+                        {% if attendance_stats %}
+                            {% for stat in attendance_stats %}
+                                {% if stat.attendance_percentage < 75 %}
+                                    {% widthratio stat.attendance_percentage 1 1 as at_risk_count %}
+                                {% endif %}
+                            {% endfor %}
+                            {{ at_risk_count|default:0 }}
+                        {% else %}
+                            0
+                        {% endif %}
+                    </div>
+                    <div class="stats-label">At Risk (<75%)</div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Attendance Summary Table -->
+        <div class="card">
+            <div class="card-header">
+                <h5>
+                    <i class="bi bi-table"></i> Student Attendance Summary
+                </h5>
+            </div>
+            <div class="card-body p-0">
+                {% if attendance_stats %}
+                    <div class="table-responsive">
+                        <table class="table">
+                            <thead>
+                                <tr>
+                                    <th>Student ID</th>
+                                    <th>Student Name</th>
+                                    <th>Program</th>
+                                    <th>Year Level</th>
+                                    <th>Present</th>
+                                    <th>Absent</th>
+                                    <th>Late</th>
+                                    <th>Excused</th>
+                                    <th>Total Days</th>
+                                    <th>Attendance %</th>
+                                    <th>Status</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% for stat in attendance_stats %}
+                                    <tr>
+                                        <td><strong>{{ stat.student.student_id }}</strong></td>
+                                        <td><strong>{{ stat.student.display_name }}</strong></td>
+                                        <td>{{ stat.student.program }}</td>
+                                        <td>{{ stat.student.year_level }}</td>
+                                        <td>
+                                            <span class="badge bg-success">{{ stat.present_days }}</span>
+                                        </td>
+                                        <td>
+                                            <span class="badge bg-danger">{{ stat.absent_days }}</span>
+                                        </td>
+                                        <td>
+                                            <span class="badge bg-warning text-dark">{{ stat.late_days }}</span>
+                                        </td>
+                                        <td>
+                                            <span class="badge bg-info">{{ stat.excused_days }}</span>
+                                        </td>
+                                        <td>{{ stat.total_days }}</td>
+                                        <td>
+                                            <span class="attendance-percentage 
+                                                {% if stat.attendance_percentage >= 90 %}percentage-excellent
+                                                {% elif stat.attendance_percentage >= 80 %}percentage-good
+                                                {% elif stat.attendance_percentage >= 75 %}percentage-warning
+                                                {% else %}percentage-danger{% endif %}">
+                                                {{ stat.attendance_percentage }}%
+                                            </span>
+                                        </td>
+                                        <td>
+                                            {% if stat.attendance_percentage >= 90 %}
+                                                <span class="badge bg-success">Excellent</span>
+                                            {% elif stat.attendance_percentage >= 80 %}
+                                                <span class="badge bg-info">Good</span>
+                                            {% elif stat.attendance_percentage >= 75 %}
+                                                <span class="badge bg-warning text-dark">Warning</span>
+                                            {% else %}
+                                                <span class="badge bg-danger">At Risk</span>
+                                            {% endif %}
+                                        </td>
+                                    </tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+                {% else %}
+                    <div class="empty-state">
+                        <i class="bi bi-calendar-x"></i>
+                        <h4>No Attendance Data</h4>
+                        <p>No attendance data available for this class.</p>
+                    </div>
+                {% endif %}
+            </div>
+        </div>
+
+        <!-- Attendance Distribution Chart -->
+        {% if attendance_stats %}
+        <div class="card">
+            <div class="card-header">
+                <h5><i class="bi bi-pie-chart"></i> Attendance Distribution</h5>
+            </div>
+            <div class="card-body">
+                <div class="row">
+                    <div class="col-md-6">
+                        <div class="chart-container">
+                            <canvas id="attendanceChart"></canvas>
+                        </div>
+                    </div>
+                    <div class="col-md-6">
+                        <h6 class="text-warning mb-3"><i class="bi bi-list-check"></i> Attendance Categories</h6>
+                        <div class="category-legend">
+                            <div>
+                                <span><span class="badge bg-success me-2">Excellent (≥90%)</span> <span id="excellentCount">0</span> students</span>
+                            </div>
+                            <div>
+                                <span><span class="badge bg-info me-2">Good (80-89%)</span> <span id="goodCount">0</span> students</span>
+                            </div>
+                            <div>
+                                <span><span class="badge bg-warning text-dark me-2">Warning (75-79%)</span> <span id="warningCount">0</span> students</span>
+                            </div>
+                            <div>
+                                <span><span class="badge bg-danger me-2">At Risk (<75%)</span> <span id="atRiskCount">0</span> students</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        {% endif %}
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <script>
+        // Calculate attendance categories
+        const attendanceStats = {{ attendance_stats|safe }};
+        let excellentCount = 0, goodCount = 0, warningCount = 0, atRiskCount = 0;
+        
+        attendanceStats.forEach(stat => {
+            const percentage = stat.attendance_percentage;
+            if (percentage >= 90) excellentCount++;
+            else if (percentage >= 80) goodCount++;
+            else if (percentage >= 75) warningCount++;
+            else atRiskCount++;
+        });
+        
+        // Update category counts
+        document.getElementById('excellentCount').textContent = excellentCount;
+        document.getElementById('goodCount').textContent = goodCount;
+        document.getElementById('warningCount').textContent = warningCount;
+        document.getElementById('atRiskCount').textContent = atRiskCount;
+        
+        // Create attendance distribution chart
+        const ctx = document.getElementById('attendanceChart').getContext('2d');
+        new Chart(ctx, {
+            type: 'doughnut',
+            data: {
+                labels: ['Excellent (≥90%)', 'Good (80-89%)', 'Warning (75-79%)', 'At Risk (<75%)'],
+                datasets: [{
+                    data: [excellentCount, goodCount, warningCount, atRiskCount],
+                    backgroundColor: [
+                        '#28a745',
+                        '#17a2b8',
+                        '#ffc107',
+                        '#dc3545'
+                    ],
+                    borderWidth: 0
+                }]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: true,
+                plugins: {
+                    legend: {
+                        labels: {
+                            color: '#fff',
+                            font: {
+                                size: 12
+                            }
+                        }
+                    }
+                }
+            }
+        });
+        
+        function exportToPDF() {
+            window.print();
+        }
+        
+        function exportToExcel() {
+            let csvContent = "Student ID,Student Name,Program,Year Level,Present,Absent,Late,Excused,Total Days,Attendance %,Status\n";
+            
+            attendanceStats.forEach(stat => {
+                let status = 'At Risk';
+                if (stat.attendance_percentage >= 90) status = 'Excellent';
+                else if (stat.attendance_percentage >= 80) status = 'Good';
+                else if (stat.attendance_percentage >= 75) status = 'Warning';
+                
+                csvContent += `"${stat.student.student_id}","${stat.student.full_name}","${stat.student.program}","${stat.student.year_level}",${stat.present_days},${stat.absent_days},${stat.late_days},${stat.excused_days},${stat.total_days},${stat.attendance_percentage}%,${status}\n`;
+            });
+            
+            const blob = new Blob([csvContent], { type: 'text/csv' });
+            const url = window.URL.createObjectURL(blob);
+            const a = document.createElement('a');
+            a.href = url;
+            a.download = 'attendance_summary_{{ class_obj.class_name|slugify }}.csv';
+            a.click();
+            window.URL.revokeObjectURL(url);
+        }
+    </script>
+</body>
+</html>

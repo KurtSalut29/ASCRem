@@ -1,0 +1,290 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Settings - ASCReM</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.5/font/bootstrap-icons.css" rel="stylesheet">
+    <link rel="icon" type="image/png" href="{% static 'images/ASCReM_Logo.png' %}">
+    <link rel="stylesheet" href="{% static 'images/css/settings.css' %}">
+    <link rel="stylesheet" href="{% static 'images/css/themes.css' %}">
+</head>
+<body data-theme="{{ user_settings.theme|default:'light' }}">
+    <!-- Sidebar -->
+    <aside class="sidebar">
+        <div class="logo">
+            <img src="{% static 'images/ASCReM_Logo.png' %}" alt="ASCReM Logo">
+            <h2>ASCREM</h2>
+        </div>
+        <nav class="nav-links">
+            <a href="{% url 'dashboard' %}"><i class="bi bi-speedometer2"></i> Dashboard</a>
+            <a href="{% url 'class_panel' %}"><i class="bi bi-journal-text"></i> Classes</a>
+            <a href="{% url 'attendance_panel' %}"><i class="bi bi-calendar-check"></i> Attendance</a>
+            <a href="{% url 'grades_panel' %}"><i class="bi bi-bar-chart-fill"></i> Grades</a>
+            <a href="{% url 'reports_panel' %}"><i class="bi bi-file-earmark-text"></i> Reports</a>
+            <a href="{% url 'profile' %}"><i class="bi bi-person-circle"></i> Profile</a>
+            <a href="{% url 'settings' %}" class="active"><i class="bi bi-gear"></i> Settings</a>
+            <a href="{% url 'about' %}"><i class="bi bi-info-circle"></i> About</a>
+            <a href="{% url 'logout' %}"><i class="bi bi-box-arrow-right"></i> Logout</a>
+        </nav>
+    </aside>
+
+    <!-- Main Content -->
+    <div class="main-content">
+        <div class="page-header">
+            <i class="bi bi-gear"></i>
+            <h2>Settings</h2>
+        </div>
+
+        {% if messages %}
+            {% for message in messages %}
+                <div class="alert alert-success alert-dismissible fade show" role="alert">
+                    {{ message }}
+                    <button type="button" class="btn-close btn-close-white" data-bs-dismiss="alert"></button>
+                </div>
+            {% endfor %}
+        {% endif %}
+
+        <form method="post">
+            {% csrf_token %}
+            
+            <!-- Academic Settings -->
+            <div class="card">
+                <div class="card-header">
+                    <h5><i class="bi bi-calendar-event"></i> Academic Settings</h5>
+                </div>
+                <div class="card-body">
+                    <div class="row">
+                        <div class="col-md-6 mb-3">
+                            <label class="form-label">Current School Year</label>
+                            <input type="text" name="school_year" class="form-control" 
+                                   value="{{ user_settings.school_year|default:'25-1' }}" 
+                                   placeholder="e.g., 25-1">
+                            <div class="form-text">
+                                <i class="bi bi-info-circle"></i> All data will be filtered by this school year.
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Application Settings -->
+            <div class="card">
+                <div class="card-header">
+                    <h5><i class="bi bi-app"></i> Application Settings</h5>
+                </div>
+                <div class="card-body">
+                    <div class="row">
+                        <div class="col-md-6 mb-3">
+                            <label class="form-label">Notification Preference</label>
+                            <select name="notification_pref" class="form-select">
+                                <option value="email" {% if user_settings.notification_pref == 'email' %}selected{% endif %}>Email</option>
+                                <option value="sms" {% if user_settings.notification_pref == 'sms' %}selected{% endif %}>SMS</option>
+                                <option value="none" {% if user_settings.notification_pref == 'none' %}selected{% endif %}>None</option>
+                            </select>
+                        </div>
+                        <div class="col-md-6 mb-3">
+                            <label class="form-label">Theme</label>
+                            <select name="theme" class="form-select" id="themeSelect" onchange="previewTheme(this.value)">
+                                <option value="light" {% if user_settings.theme == 'light' %}selected{% endif %}>Light</option>
+                                <option value="dark" {% if user_settings.theme == 'dark' %}selected{% endif %}>Dark</option>
+                            </select>
+                            <div class="form-text">
+                                <i class="bi bi-palette"></i> Changes apply immediately for preview.
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="row">
+                        <div class="col-md-6 mb-3">
+                            <label class="form-label">Default Report Format</label>
+                            <select name="default_report_format" class="form-select">
+                                <option value="pdf" {% if user_settings.default_report_format == 'pdf' %}selected{% endif %}>PDF</option>
+                                <option value="excel" {% if user_settings.default_report_format == 'excel' %}selected{% endif %}>Excel</option>
+                                <option value="print" {% if user_settings.default_report_format == 'print' %}selected{% endif %}>Print</option>
+                            </select>
+                        </div>
+                        <div class="col-md-6 mb-3">
+                            <label class="form-label d-block">Additional Options</label>
+                            <div class="form-check mt-2">
+                                <input class="form-check-input" type="checkbox" name="auto_generate_report" 
+                                       id="autoGenerate" {% if user_settings.auto_generate_report %}checked{% endif %}>
+                                <label class="form-check-label" for="autoGenerate">
+                                    Auto-generate reports
+                                </label>
+                            </div>
+                        </div>
+                    </div>
+                    
+
+                </div>
+            </div>
+
+            <!-- Security Settings -->
+            <div class="card">
+                <div class="card-header">
+                    <h5><i class="bi bi-shield-lock"></i> Security Settings</h5>
+                </div>
+                <div class="card-body">
+                    <div class="row">
+                        <div class="col-md-4 mb-3">
+                            <label class="form-label">Current Password</label>
+                            <input type="password" name="current_password" class="form-control" placeholder="Enter current password">
+                        </div>
+                        <div class="col-md-4 mb-3">
+                            <label class="form-label">New Password</label>
+                            <input type="password" name="new_password" class="form-control" placeholder="Enter new password">
+                        </div>
+                        <div class="col-md-4 mb-3">
+                            <label class="form-label">Confirm New Password</label>
+                            <input type="password" name="confirm_password" class="form-control" placeholder="Confirm new password">
+                        </div>
+                    </div>
+                    <div class="form-text">
+                        <i class="bi bi-info-circle"></i> Password must be exactly 4 digits (numbers only).
+                    </div>
+                </div>
+            </div>
+
+            <!-- Data Management -->
+            <div class="card">
+                <div class="card-header">
+                    <h5><i class="bi bi-database"></i> Data Management</h5>
+                </div>
+                <div class="card-body">
+                    <div class="row">
+                        <div class="col-md-6 mb-3 mb-md-0">
+                            <div class="data-management-item">
+                                <h6><i class="bi bi-download"></i> Export Data</h6>
+                                <p>Download your data in various formats for backup or analysis.</p>
+                                <button type="button" class="btn btn-primary" onclick="exportAllData()">
+                                    <i class="bi bi-download"></i> Export All Data
+                                </button>
+                            </div>
+                        </div>
+                        <div class="col-md-6">
+                            <div class="data-management-item">
+                                <h6><i class="bi bi-list-ul"></i> Activity Log</h6>
+                                <p>View your recent activities and actions in the system.</p>
+                                <a href="{% url 'activity_log' %}" class="btn btn-primary">
+                                    <i class="bi bi-list-ul"></i> View Activity Log
+                                </a>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Account Information -->
+            <div class="card">
+                <div class="card-header">
+                    <h5><i class="bi bi-info-circle"></i> Account Information</h5>
+                </div>
+                <div class="card-body">
+                    <div class="row">
+                        <div class="col-md-6 mb-3">
+                            <div class="info-item">
+                                <label class="form-label">Instructor ID:</label>
+                                <p>{{ user.instructor_id }}</p>
+                            </div>
+                        </div>
+                        <div class="col-md-6 mb-3">
+                            <div class="info-item">
+                                <label class="form-label">Username:</label>
+                                <p>{{ user.username }}</p>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="row">
+                        <div class="col-md-6 mb-3">
+                            <div class="info-item">
+                                <label class="form-label">Email:</label>
+                                <p>{{ user.email }}</p>
+                            </div>
+                        </div>
+                        <div class="col-md-6 mb-3">
+                            <div class="info-item">
+                                <label class="form-label">Member Since:</label>
+                                <p>{{ user.date_joined|date:"F d, Y" }}</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Action Buttons -->
+            <div class="action-buttons">
+                <button type="submit" class="btn btn-primary">
+                    <i class="bi bi-check-circle"></i> Save Settings
+                </button>
+                <a href="{% url 'profile' %}" class="btn btn-secondary">
+                    <i class="bi bi-arrow-left"></i> Back to Profile
+                </a>
+            </div>
+        </form>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    <script>
+        function previewTheme(theme) {
+            document.body.setAttribute('data-theme', theme);
+        }
+        
+        // Initialize theme on page load
+        document.addEventListener('DOMContentLoaded', function() {
+            const currentTheme = '{{ user_settings.theme|default:"light" }}';
+            document.body.setAttribute('data-theme', currentTheme);
+        });
+        
+        function exportAllData() {
+            // Show loading state
+            const btn = event.target;
+            const originalText = btn.innerHTML;
+            btn.innerHTML = '<i class="bi bi-hourglass-split"></i> Exporting...';
+            btn.disabled = true;
+            
+            // Create export URL
+            const exportUrl = '{% url "export_all_data" %}';
+            
+            // Create temporary link and trigger download
+            const link = document.createElement('a');
+            link.href = exportUrl;
+            link.download = 'ascrem_data_export.xlsx';
+            document.body.appendChild(link);
+            link.click();
+            document.body.removeChild(link);
+            
+            // Reset button after delay
+            setTimeout(() => {
+                btn.innerHTML = originalText;
+                btn.disabled = false;
+            }, 2000);
+        }
+        
+        // Track school year changes
+        document.addEventListener('DOMContentLoaded', function() {
+            const schoolYearInputs = document.querySelectorAll('input[name="school_year"]');
+            schoolYearInputs.forEach(input => {
+                const originalSchoolYear = input.value;
+                
+                input.addEventListener('change', function() {
+                    if (this.value !== originalSchoolYear) {
+                        const infoDiv = document.createElement('div');
+                        infoDiv.className = 'alert alert-info mt-2';
+                        infoDiv.innerHTML = '<i class="bi bi-info-circle"></i> School year will change to "' + this.value + '" when you save. All data will be filtered by this academic year.';
+                        
+                        const existingInfo = this.parentNode.querySelector('.alert-info');
+                        if (existingInfo) {
+                            existingInfo.remove();
+                        }
+                        
+                        this.parentNode.appendChild(infoDiv);
+                    }
+                });
+            });
+        });
+    </script>
+</body>
+</html>

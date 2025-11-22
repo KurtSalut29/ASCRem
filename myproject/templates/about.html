@@ -1,0 +1,267 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>About ASCReM</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.5/font/bootstrap-icons.css" rel="stylesheet">
+    <link rel="icon" type="image/png" href="{% static 'images/ASCReM_Logo.png' %}">
+    <link rel="stylesheet" href="{% static 'images/css/about.css' %}">
+    <link rel="stylesheet" href="{% static 'images/css/responsive.css' %}">
+    <link rel="stylesheet" href="{% static 'images/css/themes.css' %}">
+    <style>
+        .video-container {
+            position: relative;
+            width: 100%;
+            max-width: 600px;
+            margin: 0 auto 30px auto;
+            height: 0;
+            padding-bottom: 56.25%; /* 16:9 aspect ratio */
+        }
+        .video-container iframe {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            border: none;
+            border-radius: 8px;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+        }
+        .fallback-image {
+            opacity: 0.7;
+        }
+    </style>
+</head>
+<body data-theme="light">
+    <!-- Mobile Menu Toggle -->
+    <button class="mobile-menu-toggle" onclick="toggleSidebar()">
+        <i class="bi bi-list"></i>
+    </button>
+
+    <!-- Theme Toggle -->
+    <button class="theme-toggle" onclick="toggleTheme()" title="Toggle Theme">
+        <i class="bi bi-moon-fill" id="themeIcon"></i>
+    </button>
+
+    <!-- Sidebar -->
+    <aside class="sidebar" id="sidebar">
+        <div class="logo">
+            <img src="{% static 'images/ASCReM_Logo.png' %}" alt="ASCReM Logo">
+            <h2>ASCREM</h2>
+        </div>
+        <nav class="nav-links">
+            <a href="{% url 'dashboard' %}"><i class="bi bi-speedometer2"></i> Dashboard</a>
+            <a href="{% url 'class_panel' %}"><i class="bi bi-journal-text"></i> Classes</a>
+            <a href="{% url 'attendance_panel' %}"><i class="bi bi-calendar-check"></i> Attendance</a>
+            <a href="{% url 'grades_panel' %}"><i class="bi bi-bar-chart-fill"></i> Grades</a>
+            <a href="{% url 'reports_panel' %}"><i class="bi bi-file-earmark-text"></i> Reports</a>
+            <a href="{% url 'profile' %}"><i class="bi bi-person-circle"></i> Profile</a>
+            <a href="{% url 'settings' %}"><i class="bi bi-gear"></i> Settings</a>
+            <a href="{% url 'about' %}" class="active"><i class="bi bi-info-circle"></i> About</a>
+            <a href="{% url 'logout' %}"><i class="bi bi-box-arrow-right"></i> Logout</a>
+        </nav>
+    </aside>
+
+    <!-- Main Content -->
+    <div class="main-content">
+        <!-- Hero Section -->
+        <section class="hero-section">
+            <img src="{% static 'images/ASCReM_Logo.png' %}" alt="ASCReM Logo" class="logo-large">
+            <h1>ASCReM</h1>
+            <p class="lead">Automated Student Class Record Monitoring</p>
+            <p>Streamline your academic management with our comprehensive solution for instructors, featuring automated attendance tracking, grade management, and real-time reporting.</p>
+        </section>
+
+        <!-- Project Poster -->
+        <section class="hero-section">
+            <img src="{% static 'images/project_poster.jpg' %}" 
+                 alt="ASCReM Project Poster" 
+                 class="logo-large"
+                 onerror="this.src='{% static 'images/ASCReM_Logo.png' %}'; this.classList.add('fallback-image');">
+            <h2>Project Poster</h2>
+            <p class="lead">Academic Research Presentation</p>
+            <p>Visual overview of the ASCReM system architecture, features, and implementation showcasing the comprehensive student record management solution.</p>
+        </section>
+
+        <!-- Demo Video -->
+        <section class="hero-section">
+            <div class="video-container">
+                <iframe src="https://www.youtube.com/embed/YOUR_VIDEO_ID" 
+                        title="ASCReM Demo Video" 
+                        allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture" 
+                        allowfullscreen>
+                </iframe>
+            </div>
+            <h2>System Demonstration</h2>
+            <p class="lead">Live Feature Walkthrough</p>
+            <p>Complete demonstration of ASCReM's functionality including class management, attendance tracking, grade calculation, and report generation capabilities.</p>
+        </section>
+
+        <!-- Features Section -->
+        <section>
+            <h2 class="section-title"><i class="bi bi-star-fill"></i> Key Features</h2>
+            <div class="row g-4">
+                <div class="col-lg-4 col-md-6">
+                    <div class="feature-card">
+                        <i class="bi bi-calendar-check feature-icon"></i>
+                        <h4>Automated Attendance</h4>
+                        <p>Efficiently track student attendance with real-time status updates and generate comprehensive reports.</p>
+                    </div>
+                </div>
+                <div class="col-lg-4 col-md-6">
+                    <div class="feature-card">
+                        <i class="bi bi-bar-chart-fill feature-icon"></i>
+                        <h4>Grade Management</h4>
+                        <p>Easy score input and automatic grade calculation with customizable grading percentages.</p>
+                    </div>
+                </div>
+                <div class="col-lg-4 col-md-6">
+                    <div class="feature-card">
+                        <i class="bi bi-people feature-icon"></i>
+                        <h4>Class Management</h4>
+                        <p>Organize multiple classes with student enrollment and CSV import/export functionality.</p>
+                    </div>
+                </div>
+                <div class="col-lg-4 col-md-6">
+                    <div class="feature-card">
+                        <i class="bi bi-file-earmark-pdf feature-icon"></i>
+                        <h4>Report Generation</h4>
+                        <p>Generate comprehensive reports in PDF, Excel, and print formats instantly.</p>
+                    </div>
+                </div>
+                <div class="col-lg-4 col-md-6">
+                    <div class="feature-card">
+                        <i class="bi bi-shield-lock feature-icon"></i>
+                        <h4>Secure Access</h4>
+                        <p>Protected instructor login with secure data handling for academic records.</p>
+                    </div>
+                </div>
+                <div class="col-lg-4 col-md-6">
+                    <div class="feature-card">
+                        <i class="bi bi-graph-up feature-icon"></i>
+                        <h4>Real-time Analytics</h4>
+                        <p>Interactive dashboard with statistics and insights to monitor class performance.</p>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- Statistics Section -->
+        <section class="stats-section">
+            <h2 class="section-title"><i class="bi bi-trophy-fill"></i> System Statistics</h2>
+            <div class="row">
+                <div class="col-lg-3 col-md-6">
+                    <div class="stat-item">
+                        <span class="stat-number">100%</span>
+                        <span class="stat-label">Automated</span>
+                    </div>
+                </div>
+                <div class="col-lg-3 col-md-6">
+                    <div class="stat-item">
+                        <span class="stat-number">24/7</span>
+                        <span class="stat-label">Available</span>
+                    </div>
+                </div>
+                <div class="col-lg-3 col-md-6">
+                    <div class="stat-item">
+                        <span class="stat-number">99.9%</span>
+                        <span class="stat-label">Reliable</span>
+                    </div>
+                </div>
+                <div class="col-lg-3 col-md-6">
+                    <div class="stat-item">
+                        <span class="stat-number">100%</span>
+                        <span class="stat-label">Secure</span>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+
+
+        <!-- Call to Action -->
+        <section class="cta-section">
+            <h2>Ready to Transform Your Academic Management?</h2>
+            <p>Join instructors who have streamlined their class record management with ASCReM.</p>
+            {% if user.is_authenticated %}
+                <a href="{% url 'dashboard' %}" class="btn btn-cta">
+                    <i class="bi bi-speedometer2"></i> Go to Dashboard
+                </a>
+            {% else %}
+                <a href="{% url 'index' %}" class="btn btn-cta">
+                    <i class="bi bi-box-arrow-in-right"></i> Get Started Now
+                </a>
+            {% endif %}
+        </section>
+
+        <!-- Footer -->
+        <footer class="footer">
+            <div class="row">
+                <div class="col-md-6 text-md-start">
+                    <h5>ASCReM</h5>
+                    <p>Automated Student Class Record Monitoring</p>
+                </div>
+                <div class="col-md-6 text-md-end">
+                    <p>&copy; 2025 ASCReM. All rights reserved.</p>
+                    <p>Built with Django and Bootstrap</p>
+                </div>
+            </div>
+        </footer>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    <script>
+        function toggleSidebar() {
+            const sidebar = document.getElementById('sidebar');
+            sidebar.classList.toggle('active');
+        }
+
+        document.addEventListener('click', function(event) {
+            const sidebar = document.getElementById('sidebar');
+            const toggle = document.querySelector('.mobile-menu-toggle');
+            
+            if (window.innerWidth <= 768) {
+                if (!sidebar.contains(event.target) && !toggle.contains(event.target)) {
+                    sidebar.classList.remove('active');
+                }
+            }
+        });
+
+        window.addEventListener('resize', function() {
+            const sidebar = document.getElementById('sidebar');
+            if (window.innerWidth > 768) {
+                sidebar.classList.remove('active');
+            }
+        });
+        
+        // Theme functionality
+        function toggleTheme() {
+            const currentTheme = document.body.getAttribute('data-theme') || 'light';
+            const newTheme = currentTheme === 'light' ? 'dark' : 'light';
+            
+            document.body.setAttribute('data-theme', newTheme);
+            updateThemeIcon(newTheme);
+            localStorage.setItem('theme', newTheme);
+        }
+        
+        function updateThemeIcon(theme) {
+            const icon = document.getElementById('themeIcon');
+            if (theme === 'dark') {
+                icon.className = 'bi bi-sun-fill';
+            } else {
+                icon.className = 'bi bi-moon-fill';
+            }
+        }
+        
+        // Initialize theme
+        document.addEventListener('DOMContentLoaded', function() {
+            const savedTheme = localStorage.getItem('theme') || 'light';
+            document.body.setAttribute('data-theme', savedTheme);
+            updateThemeIcon(savedTheme);
+        });
+    </script>
+</body>
+</html>

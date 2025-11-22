@@ -1,0 +1,406 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Grade Settings - ASCReM</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.5/font/bootstrap-icons.css" rel="stylesheet">
+    <style>
+        body {
+            background: linear-gradient(135deg, #0a0f3c, #1e2fa3);
+            color: #fff;
+            font-family: 'Segoe UI', sans-serif;
+            min-height: 100vh;
+        }
+        
+        /* Sidebar */
+    .sidebar {
+      width: 250px;
+      background: #0d122e;
+      color: #fff;
+      padding: 20px 16px;
+      display: flex;
+      flex-direction: column;
+      position: fixed;
+      top: 0;
+      left: 0;
+      bottom: 0;
+      box-shadow: 4px 0 15px rgba(0, 0, 0, 0.5);
+    }
+
+    .logo {
+      text-align: center;
+      margin-bottom: 1.5rem;
+    }
+
+    .logo img {
+      width: 90px;
+      margin-bottom: 10px;
+    }
+
+    .logo h2 {
+      font-size: 1.2rem;
+      color: #ffd700;
+      text-transform: uppercase;
+      letter-spacing: 1px;
+    }
+
+    .logo h3 {
+      font-size: 1.2rem;
+      color: #ffd700;
+      text-transform: sentencecase;
+      letter-spacing: 1px;
+    }
+
+    .nav-links a {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      padding: 12px 16px;
+      text-decoration: none;
+      color: #e5e7eb;
+      border-radius: 8px;
+      font-weight: 500;
+      transition: background 0.3s ease, color 0.3s ease;
+    }
+
+    .nav-links a:hover,
+    .nav-links a.active {
+      background: #1e2fa3;
+      color: #ffd700;
+    }
+
+    .nav-links i {
+      font-size: 1.2rem;
+    }
+        
+        .main-content {
+            margin-left: 250px;
+            padding: 20px;
+        }
+        
+        .card {
+            background: #0d122e;
+            border: none;
+            border-radius: 12px;
+            box-shadow: 0 6px 20px rgba(0, 0, 0, 0.3);
+        }
+        
+        .card-header {
+            background: linear-gradient(90deg, #1e2fa3, #0a0f3c);
+            color: #ffd700;
+            border-radius: 12px 12px 0 0;
+            font-weight: bold;
+        }
+        
+        .form-control {
+            background: #1a1a2e;
+            border: 1px solid #333;
+            color: #fff;
+        }
+        
+        .form-control:focus {
+            background: #1a1a2e;
+            border-color: #ffd700;
+            color: #fff;
+            box-shadow: 0 0 0 0.2rem rgba(255, 215, 0, 0.25);
+        }
+        
+        .btn-primary {
+            background: #ffd700;
+            border: none;
+            color: #000;
+            font-weight: bold;
+        }
+        
+        .btn-primary:hover {
+            background: #ffce00;
+        }
+        
+        .btn-secondary {
+            background: #6c757d;
+            border: none;
+        }
+        
+        .percentage-display {
+            background: #1a1a2e;
+            border-radius: 8px;
+            padding: 20px;
+            margin-bottom: 20px;
+        }
+        
+        .percentage-item {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 10px 0;
+            border-bottom: 1px solid #333;
+        }
+        
+        .percentage-item:last-child {
+            border-bottom: none;
+        }
+        
+        .percentage-label {
+            color: #cbd5e1;
+            font-weight: 500;
+        }
+        
+        .percentage-value {
+            color: #ffd700;
+            font-weight: bold;
+            font-size: 1.1rem;
+        }
+        
+        .total-percentage {
+            background: #1e2fa3;
+            border-radius: 8px;
+            padding: 15px;
+            text-align: center;
+            margin-top: 15px;
+        }
+        
+        .total-percentage h5 {
+            color: #ffd700;
+            margin: 0;
+        }
+        
+        .warning-message {
+            background: #ffc107;
+            color: #000;
+            padding: 10px 15px;
+            border-radius: 8px;
+            margin-bottom: 20px;
+            font-weight: 500;
+        }
+        
+        .info-section {
+            background: #1a1a2e;
+            border-radius: 8px;
+            padding: 20px;
+            margin-bottom: 20px;
+        }
+        
+        .info-section h6 {
+            color: #ffd700;
+            margin-bottom: 15px;
+        }
+        
+        .info-section ul {
+            margin: 0;
+            padding-left: 20px;
+        }
+        
+        .info-section li {
+            color: #cbd5e1;
+            margin-bottom: 8px;
+        }
+    </style>
+</head>
+<body>
+     <!-- Sidebar -->
+  <aside class="sidebar">
+    <div class="logo">
+     <img src="{% static 'images/ASCReM_Logo.png' %}" alt="ASCReM Logo" width="150">
+
+      <h2>ASCREM</h2>
+      
+    </div>
+    <nav class="nav-links">
+      <a href="{% url 'dashboard' %}"><i class="bi bi-speedometer2"></i> Dashboard</a>
+      <a href="{% url 'class_panel' %}"><i class="bi bi-journal-text"></i> Classes</a>
+      <a href="{% url 'attendance_panel' %}"><i class="bi bi-calendar-check"></i> Attendance</a>
+      <a href="{% url 'grades_panel' %}" class="active"><i class="bi bi-bar-chart-fill"></i> Grades</a>
+      <a href="{% url 'reports_panel' %}"><i class="bi bi-file-earmark-text"></i> Reports</a>
+      <a href="{% url 'profile' %}"><i class="bi bi-person-circle"></i> Profile</a>
+      <a href="{% url 'settings' %}"><i class="bi bi-gear"></i> Settings</a>
+      <a href="{% url 'about' %}"><i class="bi bi-info-circle"></i> About</a>
+      <a href="{% url 'logout' %}"><i class="bi bi-box-arrow-right"></i> Logout</a>
+    </nav>
+  </aside>
+
+    <!-- Main Content -->
+    <div class="main-content">
+        <div class="d-flex justify-content-between align-items-center mb-4">
+            <h2><i class="bi bi-gear"></i> Grade Calculation Settings</h2>
+            <div class="d-flex gap-2">
+                <a href="{% url 'grades_panel' %}?class_id={{ class_obj.id }}" class="btn btn-secondary">
+                    <i class="bi bi-arrow-left"></i> Back to Grades
+                </a>
+                <a href="{% url 'calculate_grades' class_obj.id %}" class="btn btn-primary">
+                    <i class="bi bi-calculator"></i> Calculate All Grades
+                </a>
+            </div>
+        </div>
+
+        <div class="row">
+            <div class="col-lg-8">
+                <!-- Grade Settings Form -->
+                <div class="card">
+                    <div class="card-header">
+                        <h5 class="mb-0">
+                            <i class="bi bi-sliders"></i> Grade Calculation Settings for {{ class_obj.class_name }}
+                        </h5>
+                    </div>
+                    <div class="card-body">
+                        {% if messages %}
+                            {% for message in messages %}
+                                <div class="alert alert-{{ message.tags }} alert-dismissible fade show" role="alert">
+                                    {{ message }}
+                                    <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+                                </div>
+                            {% endfor %}
+                        {% endif %}
+
+                        <form method="post" id="gradeSettingsForm">
+                            {% csrf_token %}
+                            
+                            <div class="row">
+                                <div class="col-md-6 mb-3">
+                                    <label class="form-label">Quiz Percentage</label>
+                                    {{ form.quiz_percentage }}
+                                    <div class="form-text">Percentage of final grade from quizzes</div>
+                                </div>
+                                <div class="col-md-6 mb-3">
+                                    <label class="form-label">Assignment Percentage</label>
+                                    {{ form.assignment_percentage }}
+                                    <div class="form-text">Percentage of final grade from assignments</div>
+                                </div>
+                            </div>
+                            
+                            <div class="row">
+                                <div class="col-md-6 mb-3">
+                                    <label class="form-label">Project Percentage</label>
+                                    {{ form.project_percentage }}
+                                    <div class="form-text">Percentage of final grade from projects</div>
+                                </div>
+                                <div class="col-md-6 mb-3">
+                                    <label class="form-label">Exam Percentage</label>
+                                    {{ form.exam_percentage }}
+                                    <div class="form-text">Percentage of final grade from exams</div>
+                                </div>
+                            </div>
+                            
+                            <div class="row">
+                                <div class="col-md-6 mb-3">
+                                    <label class="form-label">Attendance Percentage</label>
+                                    {{ form.attendance_percentage }}
+                                    <div class="form-text">Percentage of final grade from attendance (optional)</div>
+                                </div>
+                                <div class="col-md-6 mb-3">
+                                    <label class="form-label">Passing Grade</label>
+                                    {{ form.passing_grade }}
+                                    <div class="form-text">Minimum grade required to pass</div>
+                                </div>
+                            </div>
+                            
+                            <div class="d-grid">
+                                <button type="submit" class="btn btn-primary">
+                                    <i class="bi bi-check-circle"></i> Save Settings
+                                </button>
+                            </div>
+                        </form>
+                    </div>
+                </div>
+            </div>
+
+            <div class="col-lg-4">
+                <!-- Current Settings Display -->
+                <div class="percentage-display">
+                    <h6 class="text-warning mb-3">Current Grade Distribution</h6>
+                    <div class="percentage-item">
+                        <span class="percentage-label">Quizzes</span>
+                        <span class="percentage-value" id="quizPercent">{{ grade_settings.quiz_percentage }}%</span>
+                    </div>
+                    <div class="percentage-item">
+                        <span class="percentage-label">Assignments</span>
+                        <span class="percentage-value" id="assignmentPercent">{{ grade_settings.assignment_percentage }}%</span>
+                    </div>
+                    <div class="percentage-item">
+                        <span class="percentage-label">Projects</span>
+                        <span class="percentage-value" id="projectPercent">{{ grade_settings.project_percentage }}%</span>
+                    </div>
+                    <div class="percentage-item">
+                        <span class="percentage-label">Exams</span>
+                        <span class="percentage-value" id="examPercent">{{ grade_settings.exam_percentage }}%</span>
+                    </div>
+                    <div class="percentage-item">
+                        <span class="percentage-label">Attendance</span>
+                        <span class="percentage-value" id="attendancePercent">{{ grade_settings.attendance_percentage }}%</span>
+                    </div>
+                    <div class="total-percentage">
+                        <h5>Total: <span id="totalPercent">100</span>%</h5>
+                    </div>
+                </div>
+
+                <!-- Information Section -->
+                <div class="info-section">
+                    <h6><i class="bi bi-info-circle"></i> Grade Calculation Info</h6>
+                    <ul>
+                        <li>Final grade is calculated using the weighted average of all components</li>
+                        <li>Quiz average is calculated from Quiz 1, Quiz 2, and Quiz 3</li>
+                        <li>All percentages should add up to 100%</li>
+                        <li>Students with grades below the passing grade will be marked as "Failed"</li>
+                        <li>Use "Calculate All Grades" to recalculate all student grades with these settings</li>
+                    </ul>
+                </div>
+
+                <!-- Warning Message -->
+                <div id="warningMessage" class="warning-message" style="display: none;">
+                    <i class="bi bi-exclamation-triangle"></i>
+                    <strong>Warning:</strong> The total percentage does not equal 100%. Please adjust the values.
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    <script>
+        // Update percentage display in real-time
+        const inputs = document.querySelectorAll('input[type="number"]');
+        const warningMessage = document.getElementById('warningMessage');
+        
+        function updatePercentages() {
+            const quiz = parseFloat(document.getElementById('id_quiz_percentage').value) || 0;
+            const assignment = parseFloat(document.getElementById('id_assignment_percentage').value) || 0;
+            const project = parseFloat(document.getElementById('id_project_percentage').value) || 0;
+            const exam = parseFloat(document.getElementById('id_exam_percentage').value) || 0;
+            const attendance = parseFloat(document.getElementById('id_attendance_percentage').value) || 0;
+            
+            const total = quiz + assignment + project + exam + attendance;
+            
+            document.getElementById('quizPercent').textContent = quiz + '%';
+            document.getElementById('assignmentPercent').textContent = assignment + '%';
+            document.getElementById('projectPercent').textContent = project + '%';
+            document.getElementById('examPercent').textContent = exam + '%';
+            document.getElementById('attendancePercent').textContent = attendance + '%';
+            document.getElementById('totalPercent').textContent = total;
+            
+            // Show warning if total is not 100%
+            if (Math.abs(total - 100) > 0.1) {
+                warningMessage.style.display = 'block';
+            } else {
+                warningMessage.style.display = 'none';
+            }
+        }
+        
+        inputs.forEach(input => {
+            input.addEventListener('input', updatePercentages);
+        });
+        
+        // Initial calculation
+        updatePercentages();
+        
+        // Form validation
+        document.getElementById('gradeSettingsForm').addEventListener('submit', function(e) {
+            const total = parseFloat(document.getElementById('totalPercent').textContent);
+            if (Math.abs(total - 100) > 0.1) {
+                e.preventDefault();
+                alert('Please ensure the total percentage equals 100% before saving.');
+            }
+        });
+    </script>
+</body>
+</html>

@@ -1,0 +1,1037 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Class Management - ASCReM</title>
+  <link rel="icon" type="image/png" href="{% static 'images/ASCReM_Logo.png' %}">
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.5/font/bootstrap-icons.css" rel="stylesheet">
+  <link rel="stylesheet" href="{% static 'images/css/class.css' %}">
+</head>
+
+<style>
+  /* ==================== BASE RESET ==================== */
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+      font-family: "Segoe UI", Tahoma, Geneva, Verdana, sans-serif;
+    }
+
+    body {
+      background: linear-gradient(135deg, #0a0f3c 0%, #1e2fa3 50%, #0a0f3c 100%);
+      background-attachment: fixed;
+      color: #fff;
+      display: flex;
+      min-height: 100vh;
+      overflow-x: hidden;
+    }
+
+    /* ==================== MOBILE HEADER ==================== */
+    .mobile-header {
+      display: none;
+      position: fixed;
+      top: 0;
+      left: 0;
+      right: 0;
+      height: 60px;
+      background: linear-gradient(180deg, #0d122e 0%, #0a0f1f 100%);
+      z-index: 1001;
+      padding: 0 15px;
+      align-items: center;
+      justify-content: space-between;
+      box-shadow: 0 2px 10px rgba(0, 0, 0, 0.5);
+      border-bottom: 1px solid rgba(255, 215, 0, 0.2);
+    }
+
+    .mobile-logo {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+
+    .mobile-logo img {
+      width: 40px;
+      filter: drop-shadow(0 2px 6px rgba(255, 215, 0, 0.4));
+    }
+
+    .mobile-logo h2 {
+      font-size: 1.2rem;
+      color: #ffd700;
+      margin: 0;
+      font-weight: 800;
+      letter-spacing: 1px;
+    }
+
+    .hamburger {
+      width: 30px;
+      height: 25px;
+      position: relative;
+      cursor: pointer;
+      z-index: 1002;
+    }
+
+    .hamburger span {
+      display: block;
+      position: absolute;
+      height: 3px;
+      width: 100%;
+      background: #ffd700;
+      border-radius: 3px;
+      opacity: 1;
+      left: 0;
+      transform: rotate(0deg);
+      transition: .25s ease-in-out;
+    }
+
+    .hamburger span:nth-child(1) {
+      top: 0px;
+    }
+
+    .hamburger span:nth-child(2) {
+      top: 10px;
+    }
+
+    .hamburger span:nth-child(3) {
+      top: 20px;
+    }
+
+    .hamburger.active span:nth-child(1) {
+      top: 10px;
+      transform: rotate(135deg);
+    }
+
+    .hamburger.active span:nth-child(2) {
+      opacity: 0;
+      left: -60px;
+    }
+
+    .hamburger.active span:nth-child(3) {
+      top: 10px;
+      transform: rotate(-135deg);
+    }
+
+    /* Sidebar overlay for mobile */
+    .sidebar-overlay {
+      display: none;
+      position: fixed;
+      top: 0;
+      left: 0;
+      right: 0;
+      bottom: 0;
+      background: rgba(0, 0, 0, 0.7);
+      z-index: 1001;
+      opacity: 0;
+      transition: opacity 0.3s ease;
+    }
+
+    .sidebar-overlay.active {
+      display: block;
+      opacity: 1;
+    }
+
+    /* ==================== SIDEBAR ==================== */
+    .sidebar {
+      width: 260px;
+      background: linear-gradient(180deg, #0d122e 0%, #0a0f1f 100%);
+      color: #fff;
+      padding: 20px 15px;
+      display: flex;
+      flex-direction: column;
+      position: fixed;
+      top: 0;
+      left: 0;
+      bottom: 0;
+      box-shadow: 4px 0 25px rgba(0, 0, 0, 0.7);
+      z-index: 1000;
+      border-right: 1px solid rgba(255, 215, 0, 0.1);
+    }
+
+    .logo {
+      text-align: center;
+      margin-bottom: 20px;
+      padding-bottom: 15px;
+      border-bottom: 2px solid rgba(255, 215, 0, 0.2);
+    }
+
+    .logo img {
+      width: 70px;
+      margin-bottom: 8px;
+      filter: drop-shadow(0 4px 12px rgba(255, 215, 0, 0.4));
+      transition: transform 0.3s ease;
+    }
+
+    .logo img:hover {
+      transform: scale(1.05);
+    }
+
+    .logo h2 {
+      font-size: 1.2rem;
+      color: #ffd700;
+      text-transform: uppercase;
+      letter-spacing: 2px;
+      font-weight: 800;
+      text-shadow: 0 2px 8px rgba(255, 215, 0, 0.3);
+    }
+
+    .nav-links {
+      flex: 1;
+      overflow-y: auto;
+      padding-right: 5px;
+    }
+
+    .nav-links::-webkit-scrollbar {
+      width: 5px;
+    }
+
+    .nav-links::-webkit-scrollbar-track {
+      background: rgba(10, 15, 60, 0.3);
+      border-radius: 3px;
+    }
+
+    .nav-links::-webkit-scrollbar-thumb {
+      background: rgba(255, 215, 0, 0.3);
+      border-radius: 3px;
+    }
+
+    .nav-links a {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      padding: 11px 14px;
+      text-decoration: none;
+      color: #e5e7eb;
+      border-radius: 8px;
+      font-weight: 500;
+      font-size: 0.9rem;
+      transition: all 0.3s ease;
+      margin-bottom: 5px;
+      position: relative;
+    }
+
+    .nav-links a i {
+      font-size: 1.1rem;
+      width: 20px;
+      text-align: center;
+    }
+
+    .nav-links a:hover {
+      background: rgba(30, 47, 163, 0.5);
+      color: #ffd700;
+      transform: translateX(5px);
+    }
+
+    .nav-links a.active {
+      background: linear-gradient(90deg, #1e2fa3, #2d4bc5);
+      color: #ffd700;
+      box-shadow: 0 4px 16px rgba(255, 215, 0, 0.3);
+      font-weight: 600;
+    }
+
+    .nav-links a.active::after {
+      content: '';
+      position: absolute;
+      left: 0;
+      top: 50%;
+      transform: translateY(-50%);
+      width: 4px;
+      height: 70%;
+      background: #ffd700;
+      border-radius: 0 4px 4px 0;
+    }
+
+    /* ==================== MAIN CONTENT ==================== */
+    .content {
+      margin-left: 260px;
+      flex: 1;
+      padding: 1.5rem;
+    }
+
+    .page-header {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      margin-bottom: 30px;
+      padding-bottom: 15px;
+      border-bottom: 2px solid rgba(255, 215, 0, 0.3);
+    }
+
+    .page-header h2 {
+      font-size: 1.8rem;
+      font-weight: 700;
+      color: #ffd700;
+      margin: 0;
+      text-shadow: 0 2px 4px rgba(0, 0, 0, 0.3);
+      text-transform: uppercase;
+    }
+
+    .page-header i {
+      font-size: 1.8rem;
+      color: #ffd700;
+    }
+
+    /* Cards */
+    .card {
+      background: linear-gradient(145deg, #0d122e 0%, #0a0f1f 100%);
+      border: 1px solid rgba(255, 215, 0, 0.1);
+      border-radius: 15px;
+      box-shadow: 0 8px 24px rgba(0, 0, 0, 0.4);
+      margin-bottom: 25px;
+      overflow: hidden;
+      transition: transform 0.3s ease, box-shadow 0.3s ease;
+    }
+
+    .card:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 12px 32px rgba(0, 0, 0, 0.5);
+    }
+
+    .card-header {
+      background: linear-gradient(90deg, #1e2fa3 0%, #0a0f3c 100%);
+      color: #ffd700;
+      padding: 16px 20px;
+      font-weight: 700;
+      font-size: 1.05rem;
+      border-bottom: 2px solid rgba(255, 215, 0, 0.2);
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      flex-wrap: wrap;
+      gap: 10px;
+    }
+
+    .card-header i {
+      margin-right: 8px;
+      font-size: 1.1rem;
+    }
+
+    .card-body {
+      padding: 20px;
+    }
+
+    /* Form Styles */
+    .form-label {
+      color: #ffd700;
+      font-weight: 600;
+      font-size: 0.95rem;
+      margin-bottom: 8px;
+    }
+
+    .form-control,
+    .form-select {
+      background: rgba(26, 26, 46, 0.8);
+      border: 1px solid rgba(255, 215, 0, 0.2);
+      color: #fff;
+      border-radius: 8px;
+      padding: 10px 14px;
+      font-size: 0.95rem;
+      transition: all 0.3s ease;
+    }
+
+    .form-control::placeholder {
+      color: rgba(255, 255, 255, 0.4);
+    }
+
+    .form-control:focus,
+    .form-select:focus {
+      background: rgba(26, 26, 46, 0.95);
+      border-color: #ffd700;
+      color: #fff;
+      box-shadow: 0 0 0 3px rgba(255, 215, 0, 0.15);
+      outline: none;
+    }
+
+    /* Django Form Paragraphs */
+    form p {
+      margin-bottom: 15px;
+    }
+
+    form p label {
+      color: #ffd700;
+      font-weight: 600;
+      font-size: 0.95rem;
+      display: block;
+      margin-bottom: 8px;
+    }
+
+    form p input,
+    form p select {
+      background: rgba(26, 26, 46, 0.8);
+      border: 1px solid rgba(255, 215, 0, 0.2);
+      color: #fff;
+      border-radius: 8px;
+      padding: 10px 14px;
+      font-size: 0.95rem;
+      width: 100%;
+      transition: all 0.3s ease;
+    }
+
+    form p input::placeholder,
+    form p select::placeholder {
+      color: rgba(255, 255, 255, 0.4);
+    }
+
+    form p input:focus,
+    form p select:focus {
+      background: rgba(26, 26, 46, 0.95);
+      border-color: #ffd700;
+      color: #fff;
+      box-shadow: 0 0 0 3px rgba(255, 215, 0, 0.15);
+      outline: none;
+    }
+
+    /* Buttons */
+    .btn {
+      border-radius: 8px;
+      padding: 10px 20px;
+      font-weight: 600;
+      font-size: 0.95rem;
+      transition: all 0.3s ease;
+      border: none;
+    }
+
+    .btn-sm {
+      padding: 6px 12px;
+      font-size: 0.85rem;
+    }
+
+    .btn-primary {
+      background: linear-gradient(135deg, #ffd700, #ffed4e);
+      color: #0a0f3c;
+      box-shadow: 0 4px 12px rgba(255, 215, 0, 0.3);
+    }
+
+    .btn-primary:hover {
+      background: linear-gradient(135deg, #ffed4e, #ffd700);
+      color: #0a0f3c;
+      transform: translateY(-2px);
+      box-shadow: 0 6px 16px rgba(255, 215, 0, 0.4);
+    }
+
+    .btn-success {
+      background: linear-gradient(135deg, #28a745, #20c997);
+      color: #fff;
+      box-shadow: 0 4px 12px rgba(40, 167, 69, 0.3);
+    }
+
+    .btn-success:hover {
+      background: linear-gradient(135deg, #20c997, #28a745);
+      color: #fff;
+      transform: translateY(-2px);
+      box-shadow: 0 6px 16px rgba(40, 167, 69, 0.4);
+    }
+
+    .btn-warning {
+      background: linear-gradient(135deg, #ffc107, #ffb300);
+      color: #000;
+      box-shadow: 0 4px 12px rgba(255, 193, 7, 0.3);
+    }
+
+    .btn-warning:hover {
+      background: linear-gradient(135deg, #ffb300, #ffc107);
+      color: #000;
+      transform: translateY(-2px);
+      box-shadow: 0 6px 16px rgba(255, 193, 7, 0.4);
+    }
+
+    .btn-danger {
+      background: linear-gradient(135deg, #dc3545, #c82333);
+      color: #fff;
+      box-shadow: 0 4px 12px rgba(220, 53, 69, 0.3);
+    }
+
+    .btn-danger:hover {
+      background: linear-gradient(135deg, #c82333, #dc3545);
+      color: #fff;
+      transform: translateY(-2px);
+      box-shadow: 0 6px 16px rgba(220, 53, 69, 0.4);
+    }
+
+    /* Tables */
+    .table-responsive {
+      border-radius: 10px;
+      overflow-x: auto;
+      overflow-y: auto;
+      margin-bottom: 0;
+      max-height: 500px;
+      position: relative;
+      width: 100%;
+      -webkit-overflow-scrolling: touch; /* Smooth scrolling on iOS */
+      /* Add scrolling shadow indicators */
+      background: 
+        linear-gradient(to right, rgba(13, 18, 46, 1) 30%, rgba(13, 18, 46, 0)),
+        linear-gradient(to right, rgba(13, 18, 46, 0), rgba(13, 18, 46, 1) 70%) 100% 0,
+        linear-gradient(to bottom, rgba(13, 18, 46, 1) 30%, rgba(13, 18, 46, 0)),
+        linear-gradient(to bottom, rgba(13, 18, 46, 0), rgba(13, 18, 46, 1) 70%) 0 100%;
+      background-repeat: no-repeat;
+      background-size: 40px 100%, 40px 100%, 100% 40px, 100% 40px;
+      background-attachment: local, local, local, local;
+      scroll-behavior: smooth;
+    }
+
+    .table-responsive::-webkit-scrollbar {
+      width: 12px;
+      height: 12px;
+    }
+
+    .table-responsive::-webkit-scrollbar-track {
+      background: rgba(10, 15, 60, 0.8);
+      border-radius: 6px;
+      margin: 5px;
+    }
+
+    .table-responsive::-webkit-scrollbar-thumb {
+      background: linear-gradient(135deg, rgba(255, 215, 0, 0.7), rgba(255, 215, 0, 0.5));
+      border-radius: 6px;
+      border: 2px solid rgba(10, 15, 60, 0.8);
+      box-shadow: 0 2px 4px rgba(0, 0, 0, 0.3);
+    }
+
+    .table-responsive::-webkit-scrollbar-thumb:hover {
+      background: linear-gradient(135deg, rgba(255, 215, 0, 0.9), rgba(255, 215, 0, 0.7));
+      box-shadow: 0 3px 6px rgba(0, 0, 0, 0.4);
+    }
+
+    .table-responsive::-webkit-scrollbar-corner {
+      background: rgba(10, 15, 60, 0.8);
+      border-radius: 6px;
+    }
+
+    /* Add scrollbar for Firefox */
+    .table-responsive {
+      scrollbar-width: thin;
+      scrollbar-color: rgba(255, 215, 0, 0.6) rgba(10, 15, 60, 0.8);
+    }
+
+    .table {
+      margin-bottom: 0;
+      color: #ffffff !important;
+      width: 100%;
+      min-width: 1000px; /* Ensures table stays wide on all devices */
+      background: transparent !important;
+      table-layout: auto;
+    }
+
+    .table thead {
+      background: linear-gradient(90deg, #1e2fa3, #0a0f3c);
+      position: sticky;
+      top: 0;
+      z-index: 10;
+    }
+
+    .table thead th {
+      color: #ffd700;
+      font-weight: 700;
+      font-size: 0.9rem;
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+      padding: 14px 12px;
+      border: none;
+      white-space: nowrap;
+      vertical-align: middle;
+      background: linear-gradient(90deg, #1e2fa3, #0a0f3c);
+    }
+
+    .table tbody tr {
+      background: rgba(10, 12, 30, 0.95) !important;
+      border-bottom: 1px solid rgba(255, 215, 0, 0.1);
+      transition: background 0.2s ease;
+    }
+
+    .table tbody tr:hover {
+      background: rgba(30, 47, 163, 0.4) !important;
+    }
+
+    .table tbody td {
+      padding: 12px;
+      border: none;
+      font-size: 0.9rem;
+      vertical-align: middle;
+      background: transparent !important;
+      color: #ffffff !important;
+    }
+    
+    .table tbody td strong {
+      color: #ffffff !important;
+    }
+
+    /* Action Buttons in Tables */
+    .table tbody td form {
+      display: inline;
+      margin: 0;
+    }
+
+    .table tbody td .btn {
+      margin-right: 5px;
+      margin-bottom: 3px;
+    }
+
+    /* Section Headers */
+    h5 {
+      color: #ffd700;
+      font-weight: 700;
+      font-size: 1.1rem;
+      margin-bottom: 15px;
+    }
+
+    hr {
+      border-color: rgba(255, 215, 0, 0.2);
+      margin: 25px 0;
+    }
+
+    /* Empty State */
+    .table tbody tr td[colspan] {
+      text-align: center;
+      color: rgba(255, 255, 255, 0.5);
+      font-style: italic;
+      padding: 40px;
+    }
+
+    /* Card Header Actions */
+    .card-header-actions {
+      display: flex;
+      gap: 10px;
+      align-items: center;
+    }
+
+    /* ==================== RESPONSIVE STYLES ==================== */
+    
+    /* Tablet and below */
+    @media (max-width: 768px) {
+      .mobile-header {
+        display: flex;
+      }
+
+      .sidebar {
+        transform: translateX(-100%);
+        transition: transform 0.3s ease;
+        z-index: 1002;
+        top: 0;
+        height: 100vh;
+      }
+
+      .sidebar.active {
+        transform: translateX(0);
+      }
+
+      .content {
+        margin-left: 0;
+        padding: 1rem;
+        padding-top: 75px;
+      }
+
+      .page-header {
+        margin-bottom: 20px;
+      }
+
+      .page-header h2 {
+        font-size: 1.4rem;
+      }
+
+      .page-header i {
+        font-size: 1.4rem;
+      }
+
+      .card-header {
+        padding: 12px 15px;
+        font-size: 0.95rem;
+      }
+
+      .card-body {
+        padding: 15px;
+      }
+
+      .table {
+        min-width: 600px;
+      }
+
+      .table thead th {
+        font-size: 0.8rem;
+        padding: 10px 8px;
+      }
+
+      .table tbody td {
+        font-size: 0.8rem;
+        padding: 10px 8px;
+      }
+
+      .btn-sm {
+        padding: 5px 10px;
+        font-size: 0.75rem;
+      }
+
+      .card-header-actions {
+        width: 100%;
+        justify-content: flex-start;
+      }
+    }
+
+    /* Small Mobile - 320px */
+    @media (max-width: 320px) {
+      .content {
+        padding: 0.8rem;
+        padding-top: 70px;
+      }
+
+      .page-header h2 {
+        font-size: 1.1rem;
+      }
+
+      .page-header i {
+        font-size: 1.1rem;
+      }
+
+      .card {
+        margin-bottom: 15px;
+      }
+
+      .card-header {
+        padding: 10px 12px;
+        font-size: 0.85rem;
+      }
+
+      .card-body {
+        padding: 12px;
+      }
+
+      form p label {
+        font-size: 0.85rem;
+      }
+
+      form p input,
+      form p select {
+        padding: 8px 10px;
+        font-size: 0.85rem;
+      }
+
+      .btn {
+        padding: 8px 15px;
+        font-size: 0.85rem;
+      }
+
+      .btn-sm {
+        padding: 4px 8px;
+        font-size: 0.7rem;
+      }
+
+      .btn i {
+        font-size: 0.8rem;
+      }
+
+      .table-responsive {
+        max-height: 400px;
+      }
+
+      .table {
+        min-width: 700px; /* Force horizontal scroll on small devices */
+      }
+
+      .table thead th {
+        font-size: 0.7rem;
+        padding: 8px 6px;
+      }
+
+      .table tbody td {
+        font-size: 0.75rem;
+        padding: 8px 6px;
+      }
+
+      .mobile-logo h2 {
+        font-size: 1rem;
+      }
+
+      .mobile-logo img {
+        width: 35px;
+      }
+
+      /* Make scrollbar more visible on small devices */
+      .table-responsive::-webkit-scrollbar {
+        width: 8px;
+        height: 8px;
+      }
+    }
+
+    /* Medium Mobile - 375px */
+    @media (min-width: 321px) and (max-width: 375px) {
+      .page-header h2 {
+        font-size: 1.2rem;
+      }
+
+      .table-responsive {
+        max-height: 400px;
+      }
+
+      .table {
+        min-width: 750px; /* Force horizontal scroll */
+      }
+
+      .btn-sm {
+        padding: 4px 9px;
+        font-size: 0.73rem;
+      }
+
+      /* Visible scrollbar */
+      .table-responsive::-webkit-scrollbar {
+        width: 8px;
+        height: 8px;
+      }
+    }
+
+    /* Large Mobile - 425px */
+    @media (min-width: 376px) and (max-width: 425px) {
+      .page-header h2 {
+        font-size: 1.3rem;
+      }
+
+      .card-header {
+        font-size: 0.9rem;
+      }
+
+      .table-responsive {
+        max-height: 450px;
+      }
+
+      .table {
+        min-width: 800px; /* Force horizontal scroll */
+      }
+
+      .btn-sm {
+        padding: 5px 10px;
+        font-size: 0.77rem;
+      }
+
+      /* Visible scrollbar */
+      .table-responsive::-webkit-scrollbar {
+        width: 10px;
+        height: 10px;
+      }
+    }
+
+    /* Laptop - 1024px */
+    @media (min-width: 769px) and (max-width: 1024px) {
+      .sidebar {
+        width: 220px;
+      }
+
+      .content {
+        margin-left: 220px;
+        padding: 1.3rem;
+      }
+
+      .page-header h2 {
+        font-size: 1.6rem;
+      }
+    }
+  </style>
+<body>
+  <!-- Mobile Header with Hamburger -->
+  <div class="mobile-header">
+    <div class="mobile-logo">
+      <img src="{% static 'images/ASCReM_Logo.png' %}" alt="ASCReM Logo">
+      <h2>ASCREM</h2>
+    </div>
+    <div class="hamburger" id="hamburger">
+      <span></span>
+      <span></span>
+      <span></span>
+    </div>
+  </div>
+
+  <!-- Sidebar Overlay -->
+  <div class="sidebar-overlay" id="sidebarOverlay"></div>
+
+  <!-- Sidebar -->
+  <aside class="sidebar" id="sidebar">
+    <div class="logo">
+      <img src="{% static 'images/ASCReM_Logo.png' %}" alt="ASCReM Logo">
+      <h2>ASCREM</h2>
+    </div>
+    <nav class="nav-links">
+      <a href="{% url 'dashboard' %}"><i class="bi bi-speedometer2"></i> Dashboard</a>
+      <a href="{% url 'class_panel' %}" class="active"><i class="bi bi-journal-text"></i> Classes</a>
+      <a href="{% url 'attendance_panel' %}"><i class="bi bi-calendar-check"></i> Attendance</a>
+      <a href="{% url 'grades_panel' %}"><i class="bi bi-bar-chart-fill"></i> Grades</a>
+      <a href="{% url 'reports_panel' %}"><i class="bi bi-file-earmark-text"></i> Reports</a>
+      <a href="{% url 'profile' %}"><i class="bi bi-person-circle"></i> Profile</a>
+      <a href="{% url 'settings' %}"><i class="bi bi-gear"></i> Settings</a>
+      <a href="{% url 'about' %}"><i class="bi bi-info-circle"></i> About</a>
+      <a href="{% url 'logout' %}"><i class="bi bi-box-arrow-right"></i> Logout</a>
+    </nav>
+  </aside>
+
+  <!-- Main Content -->
+  <div class="content">
+    <div class="page-header">
+      <i class="bi bi-journal-text"></i>
+      <h2>Class Management</h2>
+    </div>
+
+    <!-- Add Class Form -->
+    <div class="card">
+      <div class="card-header">
+        <span><i class="bi bi-plus-circle"></i> Add New Class</span>
+      </div>
+      <div class="card-body">
+        <form method="post" action="{% url 'add_class' %}">
+          {% csrf_token %}
+          {{ class_form.as_p }}
+          <button type="submit" class="btn btn-success">
+            <i class="bi bi-save"></i> Save Class
+          </button>
+        </form>
+      </div>
+    </div>
+
+    <!-- Class List -->
+    <div class="card">
+      <div class="card-header">
+        <span><i class="bi bi-list-ul"></i> Class List</span>
+      </div>
+      <div class="card-body" style="padding: 0; overflow: hidden;">
+        <div class="table-responsive">
+          <table class="table table-hover">
+            <thead>
+              <tr>
+                <th>Class Name</th>
+                <th>Subject</th>
+                <th>Section</th>
+                <th>Semester</th>
+                <th>School Year</th>
+                <th style="text-align: center;">Actions</th>
+              </tr>
+            </thead>
+            <tbody>
+              {% for class in classes %}
+              <tr>
+                <td><strong>{{ class.class_name }}</strong></td>
+                <td>{{ class.subject }}</td>
+                <td>{{ class.section }}</td>
+                <td>{{ class.semester }}</td>
+                <td>{{ class.school_year }}</td>
+                <td style="text-align: center; white-space: nowrap;">
+                  <a href="{% url 'class_detail' class.id %}" class="btn btn-primary btn-sm">
+                    <i class="bi bi-eye"></i> View
+                  </a>
+                  <a href="{% url 'edit_class' class.id %}" class="btn btn-warning btn-sm">
+                    <i class="bi bi-pencil"></i> Edit
+                  </a>
+                  <form method="post" action="{% url 'delete_class' class.id %}" style="display:inline;">
+                    {% csrf_token %}
+                    <button type="submit" class="btn btn-danger btn-sm" onclick="return confirm('Are you sure you want to delete this class?');">
+                      <i class="bi bi-trash"></i> Delete
+                    </button>
+                  </form>
+                </td>
+              </tr>
+              {% empty %}
+              <tr><td colspan="6">No classes found. Add a class to get started.</td></tr>
+              {% endfor %}
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+
+    {% if selected_class %}
+    <!-- Student List for Selected Class -->
+    <div class="card">
+      <div class="card-header">
+        <span><i class="bi bi-people"></i> Students — {{ selected_class.class_name }} ({{ selected_class.section }})</span>
+        <div class="card-header-actions">
+          <a class="btn btn-sm btn-success" href="{% url 'upload_csv' selected_class.id %}">
+            <i class="bi bi-upload"></i> Upload CSV
+          </a>
+        </div>
+      </div>
+      <div class="card-body" style="padding: 0; overflow: hidden;">
+        <div class="table-responsive">
+          <table class="table table-hover">
+            <thead>
+              <tr>
+                <th>Student ID</th>
+                <th>Name</th>
+                <th>Program</th>
+                <th>Year Level</th>
+                <th>Section</th>
+                <th style="text-align: center;">Actions</th>
+              </tr>
+            </thead>
+            <tbody>
+              {% for s in students %}
+              <tr>
+                <td><strong>{{ s.student_id }}</strong></td>
+                <td>{{ s.display_name }}</td>
+                <td>{{ s.program }}</td>
+                <td>{{ s.year_level }}</td>
+                <td>{{ s.section }}</td>
+                <td style="text-align: center; white-space: nowrap;">
+                  <a href="{% url 'edit_student' s.id %}" class="btn btn-warning btn-sm">
+                    <i class="bi bi-pencil"></i> Edit
+                  </a>
+                  <form method="post" action="{% url 'delete_student' s.id %}" style="display:inline;">
+                    {% csrf_token %}
+                    <button class="btn btn-danger btn-sm" onclick="return confirm('Delete this student?');">
+                      <i class="bi bi-trash"></i> Delete
+                    </button>
+                  </form>
+                </td>
+              </tr>
+              {% empty %}
+              <tr><td colspan="6">No students found. Add students to this class.</td></tr>
+              {% endfor %}
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+
+    <!-- Add Student Form -->
+    <div class="card">
+      <div class="card-header">
+        <span><i class="bi bi-person-plus"></i> Add New Student</span>
+      </div>
+      <div class="card-body">
+        <form method="post" enctype="multipart/form-data" action="{% url 'add_student' selected_class.id %}">
+          {% csrf_token %}
+          {{ student_form.as_p }}
+          <button class="btn btn-success">
+            <i class="bi bi-save"></i> Save Student
+          </button>
+        </form>
+      </div>
+    </div>
+    {% endif %}
+
+  </div>
+
+  <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+  <script>
+    // Mobile Menu Toggle
+    const hamburger = document.getElementById('hamburger');
+    const sidebar = document.getElementById('sidebar');
+    const sidebarOverlay = document.getElementById('sidebarOverlay');
+
+    function toggleMenu() {
+      hamburger.classList.toggle('active');
+      sidebar.classList.toggle('active');
+      sidebarOverlay.classList.toggle('active');
+      document.body.style.overflow = sidebar.classList.contains('active') ? 'hidden' : '';
+    }
+
+    hamburger.addEventListener('click', toggleMenu);
+    sidebarOverlay.addEventListener('click', toggleMenu);
+
+    // Close menu when clicking on a nav link (mobile)
+    const navLinks = document.querySelectorAll('.nav-links a');
+    navLinks.forEach(link => {
+      link.addEventListener('click', () => {
+        if (window.innerWidth <= 768) {
+          toggleMenu();
+        }
+      });
+    });
+  </script>
+</body>
+</html>
