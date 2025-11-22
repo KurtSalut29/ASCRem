@@ -50,14 +50,14 @@ class User(AbstractUser):
 # -----------------------------
 class Class(models.Model):
     instructor = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.CASCADE)
-    class_name = models.CharField(max_length=100)
+    program = models.CharField(max_length=100)
     subject = models.CharField(max_length=100)
     section = models.CharField(max_length=50)
     semester = models.CharField(max_length=20)
     school_year = models.CharField(max_length=20)
 
     def __str__(self):
-        return f"{self.class_name} - {self.subject}"
+        return f"{self.program} - {self.subject}"
 
 
 # -----------------------------
