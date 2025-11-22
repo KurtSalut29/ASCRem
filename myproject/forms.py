@@ -102,10 +102,10 @@ class RegisterForm(UserCreationForm):
 class ClassForm(forms.ModelForm):
     class Meta:
         model = Class
-        fields = ['class_name', 'subject', 'section', 'semester', 'school_year']
+        fields = ['subject','class_name', 'section', 'semester', 'school_year']
         widgets = {
-            'class_name': forms.TextInput(attrs={'placeholder': 'e.g., The IT Boys'}),
             'subject': forms.TextInput(attrs={'placeholder': 'e.g., Web Development'}),
+            'class_name': forms.TextInput(attrs={'placeholder': 'e.g., The IT Boys'}),
             'section': forms.TextInput(attrs={'placeholder': 'e.g., BSIT 1A'}),
             'semester': forms.TextInput(attrs={'placeholder': 'e.g., 1st Semester'}),
             'school_year': forms.TextInput(attrs={'placeholder': 'e.g., 25-1'}),
