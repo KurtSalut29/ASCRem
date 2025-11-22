@@ -102,10 +102,10 @@ class RegisterForm(UserCreationForm):
 class ClassForm(forms.ModelForm):
     class Meta:
         model = Class
-        fields = ['program', 'subject', 'year_level', 'section', 'semester', 'school_year']
+        fields = ['subject','program', 'year_level', 'section', 'semester', 'school_year']
         widgets = {
-            'program': forms.TextInput(attrs={'placeholder': 'e.g., Bachelor of Science in Information Technology'}),
             'subject': forms.TextInput(attrs={'placeholder': 'e.g., Web Development'}),
+            'program': forms.TextInput(attrs={'placeholder': 'e.g., Bachelor of Science in Information Technology'}),
             'year_level': forms.Select(choices=[
                 ('', 'Select Year Level'),
                 ('1st Year', '1st Year'),

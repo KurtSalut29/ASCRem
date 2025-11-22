@@ -21,6 +21,7 @@ from .models import (
 )
 import csv
 import io
+import openpyxl
 import unicodedata 
 from django.db import transaction
 
@@ -368,7 +369,7 @@ def grades_panel(request):
     classes = Class.objects.filter(instructor=request.user, school_year=selected_school_year)
     if selected_semester:
         classes = classes.filter(semester=selected_semester)
-    classes = classes.order_by('class_name')
+    classes = classes.order_by('program')
 
     # -------------------------
     # Initialize Variables
@@ -734,7 +735,7 @@ def debug_grades(request):
     selected_class = get_object_or_404(Class, id=class_id, instructor=request.user)
     
     debug_info = []
-    debug_info.append(f"<h2>Debug Info for Class: {selected_class.class_name}</h2>")
+    debug_info.append(f"<h2>Debug Info for Class: {selected_class.program}</h2>")
     
     # Check categories
     categories = GradeCategory.objects.filter(class_obj=selected_class)
@@ -822,18 +823,7 @@ def attendance_panel(request):
         # Fetch students using the related_name 'students'
         students = selected_class.students.all()
         
-        print("=" * 50)
-        print(f"DEBUG: Selected Class ID: {selected_class.id}")
-        print(f"DEBUG: Class Name: {selected_class.class_name}")
-        print(f"DEBUG: Found {students.count()} students")
-        print("=" * 50)
-        
-        for student in students:
-            print(f"Student ID: {student.student_id}")
-            print(f"Name: {student.first_name} {student.last_name}")
-            print(f"Program: {student.program}")
-            print(f"Year: {student.year_level}")
-            print("-" * 30)
+
 
         if students.exists():
             # Ensure attendance exists for each student for the selected date
@@ -851,15 +841,7 @@ def attendance_panel(request):
                 date=selected_date
             ).select_related('student').order_by('student__last_name', 'student__first_name')
             
-            print(f"DEBUG: Total attendance records: {attendance_records.count()}")
-            for record in attendance_records:
-                print(f"Attendance Record ID: {record.id}")
-                print(f"Student: {record.student.student_id} - {record.student.display_name}")
-                print(f"Status: {record.status}")
-                print("-" * 30)
-            
-        else:
-            print("⚠️ WARNING: NO STUDENTS FOUND FOR THIS CLASS!")
+
 
     return render(request, 'attendance.html', {
         'classes': classes,
@@ -1181,7 +1163,7 @@ def generate_attendance_report(request, class_id):
     # Log activity
     ActivityLog.objects.create(
         user=request.user,
-        action=f"Generated attendance report for {class_obj.class_name}",
+        action=f"Generated attendance report for {class_obj.program}",
         description=f"PDF report generated for {len(attendance_stats)} students",
         class_obj=class_obj
     )
@@ -1215,7 +1197,7 @@ def generate_grade_report(request, class_id):
     # Log activity
     ActivityLog.objects.create(
         user=request.user,
-        action=f"Generated grade report for {class_obj.class_name}",
+        action=f"Generated grade report for {class_obj.program}",
         description=f"PDF report generated for {total_students} students",
         class_obj=class_obj
     )
@@ -1260,7 +1242,7 @@ def generate_class_summary(request, class_id):
     # Log activity
     ActivityLog.objects.create(
         user=request.user,
-        action=f"Generated class summary for {class_obj.class_name}",
+        action=f"Generated class summary for {class_obj.program}",
         description=f"Comprehensive report generated",
         class_obj=class_obj
     )
@@ -1403,7 +1385,7 @@ def generate_attendance_excel(request, class_id):
         ws.cell(row=row, column=8, value=f"{attendance_percentage:.2f}%")
     
     response = HttpResponse(content_type='application/vnd.openxmlformats-officedocument.spreadsheetml.sheet')
-    response['Content-Disposition'] = f'attachment; filename="attendance_report_{class_obj.class_name}.xlsx"'
+    response['Content-Disposition'] = f'attachment; filename="attendance_report_{class_obj.program}.xlsx"'
     wb.save(response)
     return response
 
@@ -1437,7 +1419,7 @@ def generate_grades_excel(request, class_id):
         ws.cell(row=row, column=5, value=summary.remarks)
     
     response = HttpResponse(content_type='application/vnd.openxmlformats-officedocument.spreadsheetml.sheet')
-    response['Content-Disposition'] = f'attachment; filename="grades_report_{class_obj.class_name}.xlsx"'
+    response['Content-Disposition'] = f'attachment; filename="grades_report_{class_obj.program}.xlsx"'
     wb.save(response)
     return response
 
@@ -1480,7 +1462,7 @@ def generate_summary_excel(request, class_id):
         ws.cell(row=row, column=6, value=f"{attendance_percentage:.2f}%")
     
     response = HttpResponse(content_type='application/vnd.openxmlformats-officedocument.spreadsheetml.sheet')
-    response['Content-Disposition'] = f'attachment; filename="summary_report_{class_obj.class_name}.xlsx"'
+    response['Content-Disposition'] = f'attachment; filename="summary_report_{class_obj.program}.xlsx"'
     wb.save(response)
     return response
 
@@ -1496,18 +1478,19 @@ def export_all_data(request):
     # Classes sheet
     ws_classes = wb.active
     ws_classes.title = "Classes"
-    classes_headers = ['Class Name', 'Subject', 'Section', 'Semester', 'School Year']
+    classes_headers = ['Program', 'Subject', 'Year Level', 'Section', 'Semester', 'School Year']
     for col, header in enumerate(classes_headers, 1):
         cell = ws_classes.cell(row=1, column=col, value=header)
         cell.font = Font(bold=True)
     
     classes = Class.objects.filter(instructor=request.user)
     for row, cls in enumerate(classes, 2):
-        ws_classes.cell(row=row, column=1, value=cls.class_name)
+        ws_classes.cell(row=row, column=1, value=cls.program)
         ws_classes.cell(row=row, column=2, value=cls.subject)
-        ws_classes.cell(row=row, column=3, value=cls.section)
-        ws_classes.cell(row=row, column=4, value=cls.semester)
-        ws_classes.cell(row=row, column=5, value=cls.school_year)
+        ws_classes.cell(row=row, column=3, value=cls.year_level)
+        ws_classes.cell(row=row, column=4, value=cls.section)
+        ws_classes.cell(row=row, column=5, value=cls.semester)
+        ws_classes.cell(row=row, column=6, value=cls.school_year)
     
     # Students sheet
     ws_students = wb.create_sheet("Students")
@@ -1525,7 +1508,7 @@ def export_all_data(request):
         ws_students.cell(row=row, column=5, value=student.program)
         ws_students.cell(row=row, column=6, value=student.year_level)
         ws_students.cell(row=row, column=7, value=student.section)
-        ws_students.cell(row=row, column=8, value=student.class_obj.class_name)
+        ws_students.cell(row=row, column=8, value=student.class_obj.program)
     
     # Grades sheet
     ws_grades = wb.create_sheet("Grades")
@@ -1538,7 +1521,7 @@ def export_all_data(request):
     for row, grade in enumerate(grades, 2):
         ws_grades.cell(row=row, column=1, value=grade.student.student_id)
         ws_grades.cell(row=row, column=2, value=grade.student.display_name)
-        ws_grades.cell(row=row, column=3, value=grade.class_obj.class_name)
+        ws_grades.cell(row=row, column=3, value=grade.class_obj.program)
         ws_grades.cell(row=row, column=4, value=f"{grade.final_grade:.2f}%")
         ws_grades.cell(row=row, column=5, value=grade.equivalent_grade or '-')
         ws_grades.cell(row=row, column=6, value=grade.remarks)

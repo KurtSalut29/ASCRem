@@ -910,7 +910,7 @@ body {
                         <option value="">Choose a class...</option>
                         {% for class in classes %}
                             <option value="{{ class.id }}" {% if selected_class and selected_class.id == class.id %}selected{% endif %}>
-                                {{ class.class_name }} - {{ class.subject }} ({{ class.section }})
+                                {{ class.program }} - {{ class.subject }} ({{ class.year_level }} - {{ class.section }})
                             </option>
                         {% endfor %}
                     </select>
@@ -922,7 +922,7 @@ body {
     {% if selected_class %}
     <div class="card">
         <div class="card-header">
-            <h5><i class="bi bi-people"></i> Attendance for {{ selected_class.class_name }} - {{ selected_date|date:'F d, Y' }}</h5>
+            <h5><i class="bi bi-people"></i> Attendance for {{ selected_class.program }} - {{ selected_class.subject }} ({{ selected_class.year_level }} - {{ selected_class.section }}) - {{ selected_date|date:'F d, Y' }}</h5>
         </div>
         <div class="card-body p-0" style="overflow: hidden;">
             {% if attendance_records %}
