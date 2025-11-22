@@ -52,12 +52,13 @@ class Class(models.Model):
     instructor = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.CASCADE)
     program = models.CharField(max_length=100)
     subject = models.CharField(max_length=100)
+    year_level = models.CharField(max_length=20)
     section = models.CharField(max_length=50)
     semester = models.CharField(max_length=20)
     school_year = models.CharField(max_length=20)
 
     def __str__(self):
-        return f"{self.program} - {self.subject}"
+        return f"{self.program} - {self.subject} ({self.year_level} - {self.section})"
 
 
 # -----------------------------

@@ -9,7 +9,6 @@ from django.db.models import Q, Count, Avg, Prefetch, Sum
 from datetime import datetime, date
 import csv
 import json
-import chardet
 from .forms import (
     RegisterForm, ClassForm, StudentForm, AttendanceForm, ScoreForm,
     GradeCalculationSettingsForm, CSVUploadForm, ProfileUpdateForm
@@ -22,7 +21,6 @@ from .models import (
 )
 import csv
 import io
-import openpyxl
 import unicodedata 
 from django.db import transaction
 

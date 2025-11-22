@@ -49,9 +49,9 @@ class UserAdmin(BaseUserAdmin):
 # -----------------------------
 @admin.register(Class)
 class ClassAdmin(admin.ModelAdmin):
-    list_display = ['program', 'subject', 'section', 'instructor', 'get_student_count']
-    list_filter = ['instructor', 'section']
-    search_fields = ['program', 'subject', 'section']
+    list_display = ['program', 'subject', 'year_level', 'section', 'instructor', 'get_student_count']
+    list_filter = ['instructor', 'year_level', 'section']
+    search_fields = ['program', 'subject', 'year_level', 'section']
     
     def get_student_count(self, obj):
         return obj.students.count()
