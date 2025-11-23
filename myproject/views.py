@@ -86,15 +86,6 @@ def send_verification_email(email, code):
         if not test_email_connection():
             logger.error("Email connection test failed")
             return False
-        
-        # If this is a test email validation, don't send actual email
-        if code == "TEST":
-            # Just validate email format and connection
-            import re
-            email_pattern = r'^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$'
-            if not re.match(email_pattern, email):
-                return False
-            return True
             
         subject = 'ASCReM Email Verification'
         message = f'Your verification code is: {code}\n\nThis code will expire in 10 minutes.'
@@ -166,11 +157,12 @@ def index(request):
                 elif password1 != password2:
                     messages.error(request, "Passwords do not match.")
                 else:
-                    # Validate email by attempting to send a test email
-                    email_valid = send_verification_email(email, "TEST")
+                    # Validate email format
+                    import re
+                    email_pattern = r'^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$'
                     
-                    if not email_valid:
-                        messages.error(request, "Invalid email address. Please provide a valid email that can receive messages.")
+                    if not re.match(email_pattern, email):
+                        messages.error(request, "Invalid email format. Please provide a valid email address.")
                     else:
                         # Generate and send verification code
                         code = EmailVerification.generate_code()
