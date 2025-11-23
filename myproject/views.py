@@ -52,6 +52,23 @@ def get_user_theme(user):
 # -----------------------------
 # EMAIL VERIFICATION HELPER
 # -----------------------------
+def test_email_connection():
+    """Test email connection and configuration"""
+    from django.conf import settings
+    from django.core.mail import get_connection
+    import logging
+    logger = logging.getLogger(__name__)
+    
+    try:
+        connection = get_connection()
+        connection.open()
+        logger.info("Email connection successful")
+        connection.close()
+        return True
+    except Exception as e:
+        logger.error(f"Email connection failed: {str(e)}")
+        return False
+
 def send_verification_email(email, code):
     """Send verification code to email"""
     from django.conf import settings
@@ -59,30 +76,42 @@ def send_verification_email(email, code):
     logger = logging.getLogger(__name__)
     
     try:
+        # Log current configuration
+        logger.info(f"=== EMAIL CONFIG DEBUG ===")
+        logger.info(f"Provider: {getattr(settings, 'EMAIL_PROVIDER', 'default')}")
+        logger.info(f"Backend: {settings.EMAIL_BACKEND}")
+        logger.info(f"Host: {settings.EMAIL_HOST}")
+        logger.info(f"Port: {settings.EMAIL_PORT}")
+        logger.info(f"TLS: {settings.EMAIL_USE_TLS}")
+        logger.info(f"User: {settings.EMAIL_HOST_USER}")
+        logger.info(f"Pass configured: {'Yes' if settings.EMAIL_HOST_PASSWORD else 'No'}")
+        logger.info(f"=========================")
+        
         # Check if email credentials are configured
         if not settings.EMAIL_HOST_USER or not settings.EMAIL_HOST_PASSWORD:
-            logger.error(f"Email credentials not configured. USER: {settings.EMAIL_HOST_USER}, PASS: {'*' * len(settings.EMAIL_HOST_PASSWORD) if settings.EMAIL_HOST_PASSWORD else 'None'}")
+            logger.error(f"Email credentials not configured")
             print(f"\n=== EMAIL NOT CONFIGURED ===\nTo: {email}\nCode: {code}\n============================\n")
+            return False
+        
+        # Test connection first
+        if not test_email_connection():
+            logger.error("Email connection test failed")
             return False
             
         subject = 'ASCReM Email Verification'
         message = f'Your verification code is: {code}\n\nThis code will expire in 10 minutes.'
         
-        logger.info(f"Attempting to send email to {email} using {settings.EMAIL_HOST_USER}")
+        logger.info(f"Attempting to send email to {email}")
         
-        from django.core.mail import EmailMessage
+        from django.core.mail import send_mail
         
-        email_msg = EmailMessage(
-            subject=subject,
-            body=message,
-            from_email=f'ASCReM System <{settings.EMAIL_HOST_USER}>',
-            to=[email],
-            headers={
-                'Reply-To': settings.EMAIL_HOST_USER,
-                'X-Mailer': 'ASCReM System',
-            }
+        send_mail(
+            subject,
+            message,
+            settings.EMAIL_HOST_USER,
+            [email],
+            fail_silently=False,
         )
-        email_msg.send(fail_silently=False)
         
         logger.info(f"Email sent successfully to {email}")
         print(f"\n=== EMAIL SENT ===\nTo: {email}\nCode: {code}\n==================\n")
@@ -90,6 +119,7 @@ def send_verification_email(email, code):
         
     except Exception as e:
         logger.error(f"Email sending failed: {str(e)}")
+        logger.error(f"Exception type: {type(e).__name__}")
         print(f"\n=== EMAIL FAILED ===\nTo: {email}\nError: {str(e)}\nCode: {code}\n====================\n")
         return False
 
@@ -152,15 +182,14 @@ def index(request):
                         'password': password1,
                     }
                     
-                    email_sent = send_verification_email(email, code)
-                    if not email_sent:
-                        messages.warning(request, "Email delivery may be delayed. Use the code above to verify.")
-                    messages.success(request, f"Verification code: {code} - Enter this code to verify your account.")
+                    send_verification_email(email, code)
+                    messages.info(request, "Check your email for the verification code, or use the code displayed in the verification modal.")
                     return render(request, "index.html", {
                         "register_form": register_form,
                         "login_form": login_form,
                         "active_tab": active_tab,
-                        "show_verification_modal": True
+                        "show_verification_modal": True,
+                        "verification_code": code
                     })
             # Form has errors - don't show additional error message
             # The form errors will be displayed automatically

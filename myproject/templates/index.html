@@ -976,9 +976,15 @@
     </div>
     <div class="modal-body">
       <p>We've sent a 6-digit verification code to your email address.</p>
+      {% if verification_code %}
+        <div style="background: rgba(255, 215, 0, 0.1); border: 1px solid rgba(255, 215, 0, 0.3); border-radius: 8px; padding: 12px; margin: 15px 0; text-align: center;">
+          <p style="color: #ffd700; font-weight: 600; margin: 0;">Your verification code:</p>
+          <p style="color: #fff; font-size: 1.5rem; font-weight: 700; letter-spacing: 4px; margin: 8px 0 0 0;">{{ verification_code }}</p>
+        </div>
+      {% endif %}
       <p>Please enter the code below:</p>
       <div class="verification-input">
-        <input type="text" id="verificationCode" placeholder="000000" maxlength="6" pattern="[0-9]{6}">
+        <input type="text" id="verificationCode" placeholder="000000" maxlength="6" pattern="[0-9]{6}"{% if verification_code %} value="{{ verification_code }}"{% endif %}>
       </div>
       <div id="verificationError" class="error-message" style="display: none;"></div>
     </div>
