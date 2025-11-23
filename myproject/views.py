@@ -114,7 +114,7 @@ def index(request):
                     login(request, user)
                     return redirect("dashboard")
                 else:
-                    messages.error(request, "Invalid username or password.")
+                    messages.error(request, "Invalid Instructor_ID or password.")
 
     return render(request, "index.html", {
         "register_form": register_form,
