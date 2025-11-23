@@ -41,9 +41,7 @@ ALLOWED_HOSTS = ['127.0.0.1', 'localhost', 'ascrem.onrender.com']
 
 INSTALLED_APPS = [
     'django.contrib.admin',
-This page isn’t working right now
-ascrem.onrender.com can't currently handle this request.
-HTTP ERROR 502    'django.contrib.auth',
+    'django.contrib.auth',
     'django.contrib.contenttypes',
     'django.contrib.sessions',
     'django.contrib.messages',
