@@ -312,6 +312,7 @@ class GradeItem(models.Model):
     item_name = models.CharField(max_length=100)
     total_items = models.IntegerField(default=0)
     passing_percentage = models.FloatField(default=0)
+    date_recorded = models.DateField(auto_now_add=True)
 
     def __str__(self):
         return f"{self.item_name} ({self.category.name})"

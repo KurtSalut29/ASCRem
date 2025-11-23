@@ -566,6 +566,9 @@
 
     .score-input {
       max-width: 80px;
+      text-align: center;
+      margin: 0 auto;
+      display: block;
     }
 
     /* ==================== RESPONSIVE STYLES ==================== */
@@ -919,7 +922,7 @@
                     {% for item in items %}
                       <th class="text-center" style="min-width: 100px;">
                         {{ item.item_name }}
-                        <small>Total: {{ item.total_items }} | Pass: {{ item.passing_percentage }}%</small>
+                        <small>Total: {{ item.total_items }} | Pass: {{ item.passing_percentage }}% | {{ item.date_recorded|date:"M d, Y" }}</small>
                       </th>
                     {% endfor %}
                     <th class="calc-cell">Category Total</th>
@@ -942,7 +945,7 @@
                              data-category="{{ cat.id }}"
                              data-total="{{ item.total_items }}"
                              data-pass-percent="{{ item.passing_percentage }}"
-                             value="{% with s_obj=score_map|get_item:st.id|get_item:item.id %}{{ s_obj.score_percentage|default_if_none:"" }}{% endwith %}" />
+                             value="{% with s_obj=score_map|get_item:st.id|get_item:item.id %}{% if s_obj.score_percentage %}{{ s_obj.score_percentage|floatformat:0 }}{% endif %}{% endwith %}" />
                     </td>
                     {% endfor %}
                     <td class="text-center">
@@ -1089,7 +1092,10 @@
                     
                     const firstInput = tr.querySelector(`input.score-input[data-category="${catId}"]`);
                     const passPercent = firstInput ? parseFloat(firstInput.dataset.passPercent) || 75 : 75;
-                    eqElem.textContent = getEquivalent(percent, passPercent);
+                    const status = getEquivalent(percent, passPercent);
+                    eqElem.textContent = status;
+                    eqElem.style.setProperty('color', status === 'Passed' ? '#28a745' : '#dc3545', 'important');
+                    eqElem.style.setProperty('font-weight', 'bold', 'important');
                 } else {
                     catTotalElem.textContent = '0.00%';
                     eqElem.textContent = 'Failed';
@@ -1178,7 +1184,7 @@
                 const total = parseFloat(inp.dataset.total) || 1;
                 let val = parseFloat(inp.value.replace(',', '.')) || 0;
                 val = Math.max(0, Math.min(val, total));
-                inp.value = val;
+                inp.value = val % 1 === 0 ? Math.floor(val) : val;
 
                 computeCategory(inp.dataset.category);
             });

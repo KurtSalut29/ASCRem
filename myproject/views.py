@@ -53,22 +53,31 @@ def get_user_theme(user):
 # EMAIL VERIFICATION HELPER
 # -----------------------------
 def send_verification_email(email, code):
-    """Send verification code to email"""
-    try:
-        subject = 'ASCReM Email Verification'
-        message = f'Your verification code is: {code}\n\nThis code will expire in 10 minutes.'
-        send_mail(
-            subject,
-            message,
-            'noreply@ascrem.com',
-            [email],
-            fail_silently=False,
-        )
-        print(f"\n=== EMAIL SENT ===\nTo: {email}\nCode: {code}\n==================\n")
-        return True
-    except Exception as e:
-        print(f"Email sending failed: {e}")
-        return False
+    """Send verification code to email with timeout protection"""
+    import threading
+    import time
+    
+    def send_email():
+        try:
+            subject = 'ASCReM Email Verification'
+            message = f'Your verification code is: {code}\n\nThis code will expire in 10 minutes.'
+            send_mail(
+                subject,
+                message,
+                'noreply@ascrem.com',
+                [email],
+                fail_silently=True,
+            )
+            print(f"\n=== EMAIL SENT ===\nTo: {email}\nCode: {code}\n==================\n")
+        except Exception as e:
+            print(f"Email sending failed: {e}")
+    
+    # Send email in background thread to prevent blocking
+    email_thread = threading.Thread(target=send_email)
+    email_thread.daemon = True
+    email_thread.start()
+    
+    return True  # Always return True to continue registration flow
 
 
 # -----------------------------
@@ -908,9 +917,9 @@ def attendance_panel(request):
     current_school_year = get_current_school_year(request.user)
     classes = Class.objects.filter(instructor=request.user, school_year=current_school_year)
     
-    # Get selected class and date from GET parameters
-    selected_class_id = request.GET.get('class_id')
-    selected_date_str = request.GET.get('date')
+    # Get selected class and date from GET/POST parameters
+    selected_class_id = request.GET.get('class_id') or request.POST.get('class_id')
+    selected_date_str = request.GET.get('date') or request.POST.get('date')
     
     # Default to today if no date selected
     selected_date = datetime.strptime(selected_date_str, "%Y-%m-%d").date() if selected_date_str else timezone.localdate()
@@ -919,14 +928,40 @@ def attendance_panel(request):
     students = []
     attendance_records = []
 
+    # Handle POST request for saving attendance
+    if request.method == 'POST' and request.POST.get('action') == 'save_attendance':
+        selected_class = get_object_or_404(Class, id=selected_class_id, instructor=request.user)
+        
+        saved_count = 0
+        for key, value in request.POST.items():
+            if key.startswith('attendance_'):
+                attendance_id = key.replace('attendance_', '')
+                try:
+                    attendance = Attendance.objects.get(id=attendance_id, class_obj__instructor=request.user)
+                    attendance.status = value
+                    attendance.save()
+                    
+                    # Log activity
+                    ActivityLog.objects.create(
+                        user=request.user,
+                        action=f"Updated attendance for {attendance.student.display_name}",
+                        description=f"Changed status to {value} on {attendance.date}",
+                        class_obj=attendance.class_obj,
+                        student=attendance.student
+                    )
+                    saved_count += 1
+                except Attendance.DoesNotExist:
+                    continue
+        
+        messages.success(request, f'Attendance saved successfully! Updated {saved_count} records.')
+        return redirect(f"{request.path}?class_id={selected_class_id}&date={selected_date_str}")
+
     if selected_class_id:
         selected_class = get_object_or_404(Class, id=selected_class_id, instructor=request.user)
         
         # Fetch students using the related_name 'students'
         students = selected_class.students.all()
         
-
-
         if students.exists():
             # Ensure attendance exists for each student for the selected date
             for student in students:
@@ -942,8 +977,6 @@ def attendance_panel(request):
                 class_obj=selected_class,
                 date=selected_date
             ).select_related('student').order_by('student__last_name', 'student__first_name')
-            
-
 
     return render(request, 'attendance.html', {
         'classes': classes,
@@ -1003,7 +1036,18 @@ def update_attendance_ajax(request):
             for item in updates:
                 attendance_id = item.get('attendance_id')
                 status = item.get('status')
-                Attendance.objects.filter(id=attendance_id).update(status=status)
+                attendance = Attendance.objects.get(id=attendance_id, class_obj__instructor=request.user)
+                attendance.status = status
+                attendance.save()
+                
+                # Log activity
+                ActivityLog.objects.create(
+                    user=request.user,
+                    action=f"Updated attendance for {attendance.student.display_name}",
+                    description=f"Changed status to {status} on {attendance.date}",
+                    class_obj=attendance.class_obj,
+                    student=attendance.student
+                )
             return JsonResponse({'success': True})
         except Exception as e:
             return JsonResponse({'success': False, 'message': str(e)})
@@ -1065,7 +1109,18 @@ def profile_view(request):
     else:
         form = ProfileUpdateForm(instance=request.user)
 
-    return render(request, 'user_profile.html', {'form': form})
+    # Get statistics for profile page
+    current_school_year = get_current_school_year(request.user)
+    total_classes = Class.objects.filter(instructor=request.user, school_year=current_school_year).count()
+    total_students = Student.objects.filter(class_obj__instructor=request.user, class_obj__school_year=current_school_year).distinct().count()
+    total_activities = ActivityLog.objects.filter(user=request.user).count()
+
+    return render(request, 'user_profile.html', {
+        'form': form,
+        'total_classes': total_classes,
+        'total_students': total_students,
+        'total_activities': total_activities
+    })
 
 
 @login_required

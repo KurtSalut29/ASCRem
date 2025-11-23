@@ -895,6 +895,15 @@ body {
         {% endif %}
     </div>
 
+    {% if messages %}
+        {% for message in messages %}
+            <div class="alert alert-{{ message.tags }} alert-dismissible fade show" role="alert">
+                {{ message }}
+                <button type="button" class="btn-close btn-close-white" data-bs-dismiss="alert" aria-label="Close"></button>
+            </div>
+        {% endfor %}
+    {% endif %}
+
     <!-- Class and Date Selection -->
     <div class="card">
         <div class="card-header"><h5><i class="bi bi-funnel"></i> Select Class and Date</h5></div>
@@ -992,9 +1001,9 @@ body {
     {% else %}
     <div class="card">
         <div class="card-body text-center py-4">
-            <i class="bi bi-calendar-check"></i>
-            <h4>Select a Class to Manage Attendance</h4>
-            <p>Choose a class from the dropdown above to start recording attendance.</p>
+            <i class="bi bi-calendar-check" style="color: #ffffff;"></i>
+            <h4 style="color: #ffd700;">Select a Class to Manage Attendance</h4>
+            <p style="color: #ffffff;">Choose a class from the dropdown above to start recording attendance.</p>
         </div>
     </div>
     {% endif %}
@@ -1047,34 +1056,49 @@ function saveAttendance() {
         return;
     }
 
-    let updates = [];
+    // Create form and submit
+    const form = document.createElement('form');
+    form.method = 'POST';
+    form.action = '{% url "attendance_panel" %}';
+    
+    // Add CSRF token
+    const csrfInput = document.createElement('input');
+    csrfInput.type = 'hidden';
+    csrfInput.name = 'csrfmiddlewaretoken';
+    csrfInput.value = '{{ csrf_token }}';
+    form.appendChild(csrfInput);
+    
+    // Add action
+    const actionInput = document.createElement('input');
+    actionInput.type = 'hidden';
+    actionInput.name = 'action';
+    actionInput.value = 'save_attendance';
+    form.appendChild(actionInput);
+    
+    // Add class and date
+    const classInput = document.createElement('input');
+    classInput.type = 'hidden';
+    classInput.name = 'class_id';
+    classInput.value = '{{ selected_class.id }}';
+    form.appendChild(classInput);
+    
+    const dateInput = document.createElement('input');
+    dateInput.type = 'hidden';
+    dateInput.name = 'date';
+    dateInput.value = '{{ selected_date|date:"Y-m-d" }}';
+    form.appendChild(dateInput);
+    
+    // Add attendance updates
     for (let id in attendanceData) {
-        updates.push({attendance_id: id, status: attendanceData[id]});
+        const input = document.createElement('input');
+        input.type = 'hidden';
+        input.name = `attendance_${id}`;
+        input.value = attendanceData[id];
+        form.appendChild(input);
     }
-
-    fetch("{% url 'update_attendance_ajax' %}", {
-        method: 'POST',
-        headers: {
-            'Content-Type': 'application/json',
-            'X-CSRFToken': '{{ csrf_token }}',
-            'X-Requested-With': 'XMLHttpRequest'
-        },
-        body: JSON.stringify({updates: updates})
-    })
-    .then(res => res.json())
-    .then(data => {
-        if (data.success) {
-            alert('Attendance saved successfully!');
-            attendanceData = {};
-            location.reload();
-        } else {
-            alert('Error: ' + data.message);
-        }
-    })
-    .catch(err => {
-        console.error(err);
-        alert('An error occurred while saving attendance.');
-    });
+    
+    document.body.appendChild(form);
+    form.submit();
 }
 </script>
 
