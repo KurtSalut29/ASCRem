@@ -57,6 +57,7 @@
       letter-spacing: 2px;
       font-weight: 800;
       text-shadow: 0 2px 8px rgba(255, 215, 0, 0.3);
+      text-decoration: none;
     }
 
     .nav-links {
