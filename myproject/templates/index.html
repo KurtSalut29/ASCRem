@@ -133,17 +133,35 @@
       color: white;
       font-size: 2.8rem;
       font-weight: 800;
-      margin-bottom: 15px;
+      margin-bottom: 0;
       letter-spacing: 2px;
       text-shadow: 2px 2px 20px rgba(0, 0, 0, 0.2);
-      overflow: hidden;
-      white-space: nowrap;
+      position: relative;
+      overflow: visible;
     }
 
     .splash-title-text {
       display: inline-block;
-      opacity: 0;
-      animation: typewriter 1s steps(6) 0.8s forwards;
+      opacity: 1;
+      background: linear-gradient(
+        90deg,
+        rgba(255, 255, 255, 0.6) 0%,
+        rgba(255, 255, 255, 0.6) 40%,
+        rgba(255, 255, 255, 1) 50%,
+        rgba(255, 255, 255, 0.6) 60%,
+        rgba(255, 255, 255, 0.6) 100%
+      );
+      background-size: 200% 100%;
+      -webkit-background-clip: text;
+      background-clip: text;
+      -webkit-text-fill-color: transparent;
+      animation: textLightSweep 3s ease-in-out 1s infinite;
+      filter: drop-shadow(0 0 10px rgba(255, 255, 255, 0.8));
+    }
+
+    /* Light sweep effect - covers BOTH logo and text */
+    .combined-light-sweep {
+      display: none;
     }
 
     .splash-subtitle {
@@ -253,6 +271,33 @@
       }
     }
 
+    @keyframes sweepLogoLight {
+      0% {
+        left: -100%;
+      }
+      100% {
+        left: 150%;
+      }
+    }
+
+    @keyframes sweepLightCombined {
+      0% {
+        left: -150%;
+      }
+      100% {
+        left: 200%;
+      }
+    }
+
+    @keyframes textLightSweep {
+      0% {
+        background-position: -200% center;
+      }
+      100% {
+        background-position: 200% center;
+      }
+    }
+
     @keyframes zoomRotate {
       0% {
         transform: scale(0) rotate(-180deg);
@@ -287,6 +332,17 @@
       }
     }
 
+    @keyframes pulseRing {
+      0% {
+        transform: translate(-50%, -50%) scale(0.8);
+        opacity: 1;
+      }
+      100% {
+        transform: translate(-50%, -50%) scale(1.5);
+        opacity: 0;
+      }
+    }
+
     @keyframes scalePulseOnce {
       0% {
         transform: scale(0.5);
@@ -312,6 +368,17 @@
       100% {
         opacity: 1;
         width: 100%;
+      }
+    }
+
+    @keyframes zoomIn {
+      from {
+        transform: scale(0.5);
+        opacity: 0;
+      }
+      to {
+        transform: scale(1);
+        opacity: 1;
       }
     }
 
@@ -388,6 +455,17 @@
       }
     }
 
+    @keyframes fadeInScale {
+      0% {
+        opacity: 0;
+        transform: scale(0.3);
+      }
+      100% {
+        opacity: 1;
+        transform: scale(1);
+      }
+    }
+
     @keyframes float {
       0%, 100% {
         transform: translateY(0px);
@@ -449,23 +527,25 @@
 <!-- Splash Screen -->
 <div class="splash-screen">
   <div class="splash-content">
-    <div class="splash-logo-wrapper">
-      <div class="pulse-ring"></div>
-      <div class="pulse-ring"></div>
-      <div class="pulse-ring"></div>
-      <img src="{% static 'images/ASCReM_Logo.png' %}" alt="ASCReM Logo" class="splash-logo">
-      <div class="light-sweep"></div>
-      <!-- Particle burst elements -->
-      <div class="particle" style="--tx: -80px; --ty: -80px;"></div>
-      <div class="particle" style="--tx: 80px; --ty: -80px;"></div>
-      <div class="particle" style="--tx: -80px; --ty: 80px;"></div>
-      <div class="particle" style="--tx: 80px; --ty: 80px;"></div>
-      <div class="particle" style="--tx: 0px; --ty: -100px;"></div>
-      <div class="particle" style="--tx: 0px; --ty: 100px;"></div>
+    <!-- Combined logo and text wrapper for unified light sweep -->
+    <div class="logo-text-combined">
+      <div class="splash-logo-wrapper">
+        <img src="{% static 'images/ASCReM_Logo.png' %}" alt="ASCReM Logo" class="splash-logo">
+        <!-- Light sweep ONLY on logo -->
+        <div class="logo-light-sweep"></div>
+        <!-- Particle burst elements -->
+        <div class="particle" style="--tx: -80px; --ty: -80px;"></div>
+        <div class="particle" style="--tx: 80px; --ty: -80px;"></div>
+        <div class="particle" style="--tx: -80px; --ty: 80px;"></div>
+        <div class="particle" style="--tx: 80px; --ty: 80px;"></div>
+        <div class="particle" style="--tx: 0px; --ty: -100px;"></div>
+        <div class="particle" style="--tx: 0px; --ty: 100px;"></div>
+      </div>
+      <h1 class="splash-title">
+        <span class="splash-title-text">ASCReM</span>
+      </h1>
     </div>
-    <h1 class="splash-title">
-      <span class="splash-title-text">ASCReM</span>
-    </h1>
+    
     <p class="splash-subtitle">Automated Student Class Record Monitoring</p>
     <p class="splash-acronym">WEB APPLICATION</p>
     
