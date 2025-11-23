@@ -344,8 +344,8 @@ body {
 
 /* Buttons */
 .btn {
-  border-radius: 8px;
-  padding: 10px 20px;
+  border-radius: 4px;
+  padding: 10px 10px;
   font-weight: 600;
   font-size: 0.95rem;
   transition: all 0.3s ease;
@@ -587,25 +587,25 @@ body {
 /* Empty State */
 .empty-state {
   text-align: center;
-  padding: 60px 20px;
+  padding: 40px 20px;
   color: rgba(255, 255, 255, 0.6);
 }
 
 .empty-state i {
-  font-size: 4rem;
-  color: rgba(255, 215, 0, 0.3);
-  margin-bottom: 20px;
+  display: block;
 }
 
 .empty-state h4 {
-  color: rgba(255, 255, 255, 0.8);
   font-weight: 600;
-  margin-bottom: 10px;
 }
 
-.empty-state p {
-  color: rgba(255, 255, 255, 0.5);
-  font-size: 0.95rem;
+.empty-state ol {
+  font-size: 0.9rem;
+  line-height: 1.6;
+}
+
+.empty-state ol strong {
+  font-weight: 600;
 }
 
 /* Save Button Container */
@@ -910,7 +910,7 @@ body {
                         <option value="">Choose a class...</option>
                         {% for class in classes %}
                             <option value="{{ class.id }}" {% if selected_class and selected_class.id == class.id %}selected{% endif %}>
-                                {{ class.program }} - {{ class.subject }} ({{ class.year_level }} - {{ class.section }})
+                                {{ class.school_year }} {{ class.program|truncatechars:5 }}-{{ class.year_level|slice:"0:1" }}{{ class.section }} {{ class.subject }}
                             </option>
                         {% endfor %}
                     </select>
@@ -969,10 +969,22 @@ body {
                 </div>
             </form>
             {% else %}
-            <div class="empty-state text-center py-4">
-                <i class="bi bi-calendar-x"></i>
-                <h4>No Attendance Records</h4>
-                <p>No students enrolled in this class.</p>
+            <div class="empty-state text-center py-5">
+                <i class="bi bi-person-plus" style="font-size: 4rem; color: rgba(255, 215, 0, 0.4); margin-bottom: 20px;"></i>
+                <h4 style="color: #ffd700; margin-bottom: 15px;">No Students Enrolled</h4>
+                <p style="color: rgba(255, 255, 255, 0.7); margin-bottom: 20px; font-size: 1rem;">This class doesn't have any students yet. You need to add students before you can take attendance.</p>
+                <div style="background: rgba(255, 215, 0, 0.1); border: 1px solid rgba(255, 215, 0, 0.3); border-radius: 10px; padding: 20px; margin: 20px auto; max-width: 500px;">
+                    <h6 style="color: #ffd700; margin-bottom: 10px;"><i class="bi bi-lightbulb"></i> How to Add Students:</h6>
+                    <ol style="text-align: left; color: rgba(255, 255, 255, 0.8); margin: 0; padding-left: 20px; text-decoration: none;">
+                        <li style="margin-bottom: 8px;">Go to <strong style="color: #ffd700;">Classes</strong> menu</li>
+                        <li style="margin-bottom: 8px;">Click <strong style="color: #ffd700;">"View"</strong> on this class</li>
+                        <li style="margin-bottom: 8px;">Add students manually or upload a CSV file</li>
+                        <li>Return here to take attendance</li>
+                    </ol>
+                </div>
+                <a href="{% url 'class_panel' %}" class="btn btn-primary" style="margin-top: 15px; padding: 2px 8px; font-size: 0.7rem; line-height: 1; height: auto; min-height: auto; display: flex; align-items: center; justify-content: center; gap: 4px;">
+                    <i class="bi bi-journal-text" style="font-size: 0.7rem;"></i> Go to Classes
+                </a>
             </div>
             {% endif %}
         </div>

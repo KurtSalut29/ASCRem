@@ -230,7 +230,7 @@
     /* Buttons */
     .btn {
       border-radius: 8px;
-      padding: 10px 20px;
+      padding: 10px 10px;
       font-weight: 600;
       font-size: 0.95rem;
       transition: all 0.3s ease;

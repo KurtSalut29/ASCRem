@@ -86,17 +86,41 @@
             </a>
         </div>
 
-        <!-- Toast Messages -->
-        {% if messages %}
-        <div class="mb-3">
-            {% for message in messages %}
-            <div class="alert alert-{{ message.tags }} alert-dismissible fade show" role="alert">
-                {{ message|safe }}
-                <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+        <!-- Error Modal -->
+        <div class="modal fade" id="errorModal" tabindex="-1">
+            <div class="modal-dialog modal-dialog-centered">
+                <div class="modal-content" style="background: #0d122e; border: 1px solid #ffd700;">
+                    <div class="modal-header" style="border-bottom: 1px solid #ffd700;">
+                        <h5 class="modal-title text-warning"><i class="bi bi-exclamation-triangle"></i> Upload Error</h5>
+                        <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+                    </div>
+                    <div class="modal-body">
+                        <div id="errorContent"></div>
+                    </div>
+                    <div class="modal-footer" style="border-top: 1px solid #ffd700;">
+                        <button type="button" class="btn btn-primary" data-bs-dismiss="modal">Try Again</button>
+                    </div>
+                </div>
             </div>
-            {% endfor %}
         </div>
-        {% endif %}
+
+        <!-- Success Modal -->
+        <div class="modal fade" id="successModal" tabindex="-1">
+            <div class="modal-dialog modal-dialog-centered">
+                <div class="modal-content" style="background: #0d122e; border: 1px solid #28a745;">
+                    <div class="modal-header" style="border-bottom: 1px solid #28a745;">
+                        <h5 class="modal-title text-success"><i class="bi bi-check-circle"></i> Upload Successful</h5>
+                        <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+                    </div>
+                    <div class="modal-body">
+                        <div id="successContent"></div>
+                    </div>
+                    <div class="modal-footer" style="border-top: 1px solid #28a745;">
+                        <a href="{% url 'class_detail' class_obj.id %}" class="btn btn-success">View Students</a>
+                    </div>
+                </div>
+            </div>
+        </div>
 
         <div class="row">
             <div class="col-lg-8">
@@ -201,6 +225,21 @@ function formatFileSize(bytes) {
     const i = Math.floor(Math.log(bytes) / Math.log(k));
     return parseFloat((bytes / Math.pow(k, i)).toFixed(2)) + ' ' + sizes[i];
 }
+// Handle messages on page load
+document.addEventListener('DOMContentLoaded', function() {
+    {% if messages %}
+        {% for message in messages %}
+            {% if message.tags == 'error' %}
+                document.getElementById('errorContent').innerHTML = `{{ message|safe|escapejs }}`;
+                new bootstrap.Modal(document.getElementById('errorModal')).show();
+            {% elif message.tags == 'success' %}
+                document.getElementById('successContent').innerHTML = `{{ message|safe|escapejs }}`;
+                new bootstrap.Modal(document.getElementById('successModal')).show();
+            {% endif %}
+        {% endfor %}
+    {% endif %}
+});
+
 document.getElementById('csvUploadForm').addEventListener('submit', function() {
     uploadBtn.disabled = true;
     uploadBtn.innerHTML = '<i class="bi bi-hourglass-split"></i> Uploading...';

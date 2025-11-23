@@ -262,7 +262,9 @@
         /* Profile Picture */
         .profile-picture-container {
             position: relative;
-            display: inline-block;
+            display: flex;
+            justify-content: center;
+            align-items: center;
             margin-bottom: 20px;
         }
 
@@ -294,6 +296,9 @@
 
         .profile-header {
             text-align: center;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
         }
 
         .profile-header h4 {
