@@ -53,31 +53,45 @@ def get_user_theme(user):
 # EMAIL VERIFICATION HELPER
 # -----------------------------
 def send_verification_email(email, code):
-    """Send verification code to email with timeout protection"""
-    import threading
-    import time
+    """Send verification code to email"""
+    from django.conf import settings
+    import logging
+    logger = logging.getLogger(__name__)
     
-    def send_email():
-        try:
-            subject = 'ASCReM Email Verification'
-            message = f'Your verification code is: {code}\n\nThis code will expire in 10 minutes.'
-            send_mail(
-                subject,
-                message,
-                'noreply@ascrem.com',
-                [email],
-                fail_silently=True,
-            )
-            print(f"\n=== EMAIL SENT ===\nTo: {email}\nCode: {code}\n==================\n")
-        except Exception as e:
-            print(f"Email sending failed: {e}")
-    
-    # Send email in background thread to prevent blocking
-    email_thread = threading.Thread(target=send_email)
-    email_thread.daemon = True
-    email_thread.start()
-    
-    return True  # Always return True to continue registration flow
+    try:
+        # Check if email credentials are configured
+        if not settings.EMAIL_HOST_USER or not settings.EMAIL_HOST_PASSWORD:
+            logger.error(f"Email credentials not configured. USER: {settings.EMAIL_HOST_USER}, PASS: {'*' * len(settings.EMAIL_HOST_PASSWORD) if settings.EMAIL_HOST_PASSWORD else 'None'}")
+            print(f"\n=== EMAIL NOT CONFIGURED ===\nTo: {email}\nCode: {code}\n============================\n")
+            return False
+            
+        subject = 'ASCReM Email Verification'
+        message = f'Your verification code is: {code}\n\nThis code will expire in 10 minutes.'
+        
+        logger.info(f"Attempting to send email to {email} using {settings.EMAIL_HOST_USER}")
+        
+        from django.core.mail import EmailMessage
+        
+        email_msg = EmailMessage(
+            subject=subject,
+            body=message,
+            from_email=f'ASCReM System <{settings.EMAIL_HOST_USER}>',
+            to=[email],
+            headers={
+                'Reply-To': settings.EMAIL_HOST_USER,
+                'X-Mailer': 'ASCReM System',
+            }
+        )
+        email_msg.send(fail_silently=False)
+        
+        logger.info(f"Email sent successfully to {email}")
+        print(f"\n=== EMAIL SENT ===\nTo: {email}\nCode: {code}\n==================\n")
+        return True
+        
+    except Exception as e:
+        logger.error(f"Email sending failed: {str(e)}")
+        print(f"\n=== EMAIL FAILED ===\nTo: {email}\nError: {str(e)}\nCode: {code}\n====================\n")
+        return False
 
 
 # -----------------------------
@@ -129,24 +143,25 @@ def index(request):
                     EmailVerification.objects.filter(email=email).delete()
                     EmailVerification.objects.create(email=email, code=code)
                     
-                    if send_verification_email(email, code):
-                        request.session['pending_registration'] = {
-                            'instructor_id': register_form.cleaned_data.get('instructor_id'),
-                            'username': register_form.cleaned_data.get('username'),
-                            'email': email,
-                            'first_name': register_form.cleaned_data.get('first_name'),
-                            'last_name': register_form.cleaned_data.get('last_name'),
-                            'password': password1,
-                        }
-                        messages.success(request, f"Verification code sent to {email}. Please check your email and enter the code below.")
-                        return render(request, "index.html", {
-                            "register_form": register_form,
-                            "login_form": login_form,
-                            "active_tab": active_tab,
-                            "show_verification_modal": True
-                        })
-                    else:
-                        messages.error(request, "Failed to send verification email. Please try again.")
+                    request.session['pending_registration'] = {
+                        'instructor_id': register_form.cleaned_data.get('instructor_id'),
+                        'username': register_form.cleaned_data.get('username'),
+                        'email': email,
+                        'first_name': register_form.cleaned_data.get('first_name'),
+                        'last_name': register_form.cleaned_data.get('last_name'),
+                        'password': password1,
+                    }
+                    
+                    email_sent = send_verification_email(email, code)
+                    if not email_sent:
+                        messages.warning(request, "Email delivery may be delayed. Use the code above to verify.")
+                    messages.success(request, f"Verification code: {code} - Enter this code to verify your account.")
+                    return render(request, "index.html", {
+                        "register_form": register_form,
+                        "login_form": login_form,
+                        "active_tab": active_tab,
+                        "show_verification_modal": True
+                    })
             else:
                 # Show single consolidated error message
                 messages.error(request, "Registration failed. Please check your information and try again.")
@@ -184,22 +199,38 @@ def index(request):
 
 def verify_email(request):
     """Handle email verification"""
+    import logging
+    logger = logging.getLogger(__name__)
+    
     if request.method == "POST":
         code = request.POST.get('verification_code')
         pending_data = request.session.get('pending_registration')
         
+        logger.info(f"Verification attempt - Code: {code}, Email: {pending_data.get('email') if pending_data else 'None'}")
+        
         if not pending_data:
+            logger.error("No pending registration found in session")
             messages.error(request, 'No pending registration found.')
             return JsonResponse({'success': False})
         
         try:
+            # Check all verification records for this email
+            all_verifications = EmailVerification.objects.filter(email=pending_data['email'])
+            logger.info(f"Found {all_verifications.count()} verification records for {pending_data['email']}")
+            
+            for v in all_verifications:
+                logger.info(f"Verification record - Code: {v.code}, Expired: {v.is_expired()}, Verified: {v.is_verified}")
+            
             verification = EmailVerification.objects.get(
                 email=pending_data['email'],
                 code=code,
                 is_verified=False
             )
             
+            logger.info(f"Found matching verification record - Code: {verification.code}")
+            
             if verification.is_expired():
+                logger.error(f"Verification code expired for {pending_data['email']}")
                 messages.error(request, 'Verification code has expired.')
                 return JsonResponse({'success': False})
             
@@ -212,6 +243,8 @@ def verify_email(request):
                 last_name=pending_data['last_name'],
                 password=pending_data['password']
             )
+            
+            logger.info(f"User created successfully: {user.username}")
             
             # Create related objects
             Setting.objects.create(user=user)
@@ -228,7 +261,12 @@ def verify_email(request):
             return JsonResponse({'success': True})
             
         except EmailVerification.DoesNotExist:
+            logger.error(f"No matching verification record found for email: {pending_data['email']}, code: {code}")
             messages.error(request, 'Invalid verification code.')
+            return JsonResponse({'success': False})
+        except Exception as e:
+            logger.error(f"Verification error: {str(e)}")
+            messages.error(request, f'Verification failed: {str(e)}')
             return JsonResponse({'success': False})
     
     return JsonResponse({'success': False, 'message': 'Invalid request method.'})
