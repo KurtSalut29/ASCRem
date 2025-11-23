@@ -10,11 +10,26 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
   <link href="{% static 'css/bootstrap-icons.css' %}" rel="stylesheet">
-
   <link rel="stylesheet" href="{% static 'images/css/index.css' %}">
   
   <style>
-    /* Splash Screen Styles */
+    /* ============================================
+       RESPONSIVE BASE STYLES
+       ============================================ */
+    * {
+      box-sizing: border-box;
+    }
+
+    body {
+      margin: 0;
+      padding: 0;
+      font-family: 'Inter', sans-serif;
+      overflow-x: hidden;
+    }
+
+    /* ============================================
+       SPLASH SCREEN STYLES
+       ============================================ */
     .splash-screen {
       position: fixed;
       top: 0;
@@ -31,7 +46,6 @@
       overflow: hidden;
     }
 
-    /* Animated background particles */
     .splash-screen::before {
       content: '';
       position: absolute;
@@ -49,6 +63,7 @@
       animation: zoomIn 0.8s ease-out;
       position: relative;
       z-index: 2;
+      padding: 0 20px;
     }
 
     .splash-logo-wrapper {
@@ -70,7 +85,6 @@
       z-index: 2;
     }
 
-    /* Particle burst effect */
     .particle {
       position: absolute;
       width: 4px;
@@ -88,45 +102,18 @@
     .particle:nth-child(5) { animation: burstParticle 1.5s ease-out 0.5s forwards; top: 50%; left: 50%; }
     .particle:nth-child(6) { animation: burstParticle 1.5s ease-out 0.55s forwards; top: 50%; left: 50%; }
 
-    /* Light sweep effect - like CapCut mask - ONLY on logo */
     .light-sweep {
       position: absolute;
       top: -10%;
       left: -100%;
       width: 50%;
       height: 120%;
-      background: linear-gradient(
-        90deg,
-        transparent 0%,
-        rgba(255, 255, 255, 0.9) 50%,
-        transparent 100%
-      );
+      background: linear-gradient(90deg, transparent 0%, rgba(255, 255, 255, 0.9) 50%, transparent 100%);
       animation: sweepLight 3.5s ease-in-out 1.2s infinite;
       pointer-events: none;
       z-index: 3;
       transform: skewX(-20deg);
       filter: blur(5px);
-    }
-
-    /* Pulse ring effect */
-    .pulse-ring {
-      position: absolute;
-      top: 50%;
-      left: 50%;
-      transform: translate(-50%, -50%);
-      width: 180px;
-      height: 180px;
-      border: 3px solid rgba(255, 255, 255, 0.6);
-      border-radius: 50%;
-      animation: pulseRing 2s ease-out infinite;
-    }
-
-    .pulse-ring:nth-child(2) {
-      animation-delay: 0.5s;
-    }
-
-    .pulse-ring:nth-child(3) {
-      animation-delay: 1s;
     }
 
     .splash-title {
@@ -143,25 +130,13 @@
     .splash-title-text {
       display: inline-block;
       opacity: 1;
-      background: linear-gradient(
-        90deg,
-        rgba(255, 255, 255, 0.6) 0%,
-        rgba(255, 255, 255, 0.6) 40%,
-        rgba(255, 255, 255, 1) 50%,
-        rgba(255, 255, 255, 0.6) 60%,
-        rgba(255, 255, 255, 0.576) 100%
-      );
+      background: linear-gradient(90deg, rgba(255, 255, 255, 0.6) 0%, rgba(255, 255, 255, 0.6) 40%, rgba(255, 255, 255, 1) 50%, rgba(255, 255, 255, 0.6) 60%, rgba(255, 255, 255, 0.576) 100%);
       background-size: 200% 100%;
       -webkit-background-clip: text;
       background-clip: text;
       -webkit-text-fill-color: transparent;
       animation: textLightSweep 3s ease-in-out 1s infinite;
       filter: drop-shadow(0 0 10px rgba(255, 255, 255, 0.8));
-    }
-
-    /* Light sweep effect - covers BOTH logo and text */
-    .combined-light-sweep {
-      display: none;
     }
 
     .splash-subtitle {
@@ -181,34 +156,9 @@
       animation: slideUp 0.8s ease-out 0.7s both;
     }
 
-    .loading-dots {
-      display: flex;
-      justify-content: center;
-      gap: 10px;
-      margin-top: 40px;
-      animation: slideUp 0.8s ease-out 0.9s both;
-    }
-
-    .loading-dots span {
-      width: 12px;
-      height: 12px;
-      background: white;
-      border-radius: 50%;
-      animation: bounce 1.4s ease-in-out infinite;
-      box-shadow: 0 0 15px rgba(255, 255, 255, 0.5);
-    }
-
-    .loading-dots span:nth-child(2) {
-      animation-delay: 0.2s;
-    }
-
-    .loading-dots span:nth-child(3) {
-      animation-delay: 0.4s;
-    }
-
-    /* Progress Bar */
     .progress-container {
       width: 250px;
+      max-width: 90%;
       height: 6px;
       background: rgba(255, 255, 255, 0.2);
       border-radius: 10px;
@@ -235,67 +185,340 @@
       animation: slideUp 0.8s ease-out 1.8s both;
     }
 
-    /* Hide main content initially */
     .auth-container {
       opacity: 0;
       animation: fadeIn 0.8s ease-in-out 5.3s forwards;
     }
 
+    /* ============================================
+       TOAST NOTIFICATION STYLES
+       ============================================ */
+    .toast-container {
+      position: fixed;
+      top: 20px;
+      right: 20px;
+      z-index: 10001;
+      display: flex;
+      flex-direction: column;
+      gap: 10px;
+      max-width: 400px;
+      width: calc(100% - 40px);
+    }
+
+    .alert {
+      padding: 16px 20px;
+      border-radius: 12px;
+      box-shadow: 0 8px 24px rgba(0, 0, 0, 0.15);
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 12px;
+      font-size: 0.95rem;
+      font-weight: 500;
+      animation: slideInRight 0.4s ease-out, fadeOut 0.4s ease-in 4.6s forwards;
+      border-left: 4px solid;
+      backdrop-filter: blur(10px);
+      position: relative;
+      overflow: hidden;
+    }
+
+    .alert::before {
+      content: '';
+      position: absolute;
+      left: 0;
+      top: 0;
+      height: 100%;
+      width: 4px;
+      animation: shrinkHeight 5s linear forwards;
+    }
+
+    /* Success Toast - Green */
+    .alert-success {
+      background: linear-gradient(135deg, rgba(16, 185, 129, 0.95) 0%, rgba(5, 150, 105, 0.95) 100%);
+      color: #ffffff;
+      border-left-color: #059669;
+    }
+
+    .alert-success::before {
+      background: #ffffff;
+    }
+
+    .alert-success .toast-icon {
+      background: rgba(255, 255, 255, 0.25);
+      color: #ffffff;
+    }
+
+    /* Error/Danger Toast - Red */
+    .alert-danger,
+    .alert-error {
+      background: linear-gradient(135deg, rgba(239, 68, 68, 0.95) 0%, rgba(220, 38, 38, 0.95) 100%);
+      color: #ffffff;
+      border-left-color: #dc2626;
+    }
+
+    .alert-danger::before,
+    .alert-error::before {
+      background: #ffffff;
+    }
+
+    .alert-danger .toast-icon,
+    .alert-error .toast-icon {
+      background: rgba(255, 255, 255, 0.25);
+      color: #ffffff;
+    }
+
+    /* Warning Toast - Yellow/Orange */
+    .alert-warning {
+      background: linear-gradient(135deg, rgba(251, 191, 36, 0.95) 0%, rgba(245, 158, 11, 0.95) 100%);
+      color: #78350f;
+      border-left-color: #f59e0b;
+    }
+
+    .alert-warning::before {
+      background: #78350f;
+    }
+
+    .alert-warning .toast-icon {
+      background: rgba(120, 53, 15, 0.15);
+      color: #78350f;
+    }
+
+    /* Info Toast - Blue */
+    .alert-info {
+      background: linear-gradient(135deg, rgba(59, 130, 246, 0.95) 0%, rgba(37, 99, 235, 0.95) 100%);
+      color: #ffffff;
+      border-left-color: #2563eb;
+    }
+
+    .alert-info::before {
+      background: #ffffff;
+    }
+
+    .alert-info .toast-icon {
+      background: rgba(255, 255, 255, 0.25);
+      color: #ffffff;
+    }
+
+    .toast-icon {
+      width: 28px;
+      height: 28px;
+      border-radius: 50%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 16px;
+      flex-shrink: 0;
+      font-weight: 700;
+    }
+
+    .toast-content {
+      flex: 1;
+      line-height: 1.4;
+    }
+
+    .toast-close {
+      background: none;
+      border: none;
+      color: inherit;
+      font-size: 24px;
+      cursor: pointer;
+      padding: 0;
+      width: 24px;
+      height: 24px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      border-radius: 4px;
+      transition: background 0.2s ease;
+      opacity: 0.8;
+      flex-shrink: 0;
+    }
+
+    .toast-close:hover {
+      opacity: 1;
+      background: rgba(255, 255, 255, 0.15);
+    }
+
+    .alert-warning .toast-close:hover {
+      background: rgba(120, 53, 15, 0.15);
+    }
+
+    /* ============================================
+       VERIFICATION MODAL STYLES
+       ============================================ */
+    .modal {
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      background: rgba(0, 0, 0, 0.7);
+      backdrop-filter: blur(4px);
+      z-index: 10000;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      padding: 20px;
+      animation: fadeIn 0.3s ease-out;
+    }
+
+    .modal-content {
+      background: linear-gradient(145deg, #0d122e 0%, #0a0f1f 100%);
+      border-radius: 20px;
+      padding: 0;
+      width: 100%;
+      max-width: 450px;
+      box-shadow: 0 20px 60px rgba(0, 0, 0, 0.5);
+      border: 1px solid rgba(255, 215, 0, 0.2);
+      animation: scaleIn 0.3s ease-out;
+      overflow: hidden;
+    }
+
+    .modal-header {
+      padding: 24px;
+      border-bottom: 1px solid rgba(255, 215, 0, 0.2);
+      text-align: center;
+      background: rgba(255, 215, 0, 0.05);
+    }
+
+    .modal-header h3 {
+      color: #ffd700;
+      margin: 0;
+      font-size: 1.4rem;
+      font-weight: 700;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 10px;
+    }
+
+    .modal-body {
+      padding: 30px 24px;
+      text-align: center;
+    }
+
+    .modal-body p {
+      color: #e5e7eb;
+      margin-bottom: 12px;
+      font-size: 0.95rem;
+      line-height: 1.6;
+    }
+
+    .modal-body p:first-child {
+      font-weight: 600;
+      color: #ffd700;
+    }
+
+    .verification-input {
+      margin: 24px 0;
+    }
+
+    .verification-input input {
+      width: 100%;
+      padding: 16px;
+      font-size: 1.4rem;
+      text-align: center;
+      letter-spacing: 8px;
+      background: #ffffff;
+      border: 2px solid #e5e7eb;
+      border-radius: 12px;
+      color: #000;
+      outline: none;
+      font-weight: 600;
+      transition: all 0.3s ease;
+    }
+
+    .verification-input input:focus {
+      border-color: #ffd700;
+      box-shadow: 0 0 0 4px rgba(255, 215, 0, 0.15);
+      transform: scale(1.02);
+    }
+
+    .modal-footer {
+      padding: 20px 24px 24px;
+      display: flex;
+      gap: 12px;
+      justify-content: center;
+      flex-wrap: wrap;
+    }
+
+    .btn-accent {
+      background: linear-gradient(135deg, #ffd700 0%, #ffed4e 100%);
+      color: #0a0f1f;
+      border: none;
+      padding: 14px 32px;
+      border-radius: 10px;
+      cursor: pointer;
+      font-weight: 700;
+      font-size: 1rem;
+      transition: all 0.3s ease;
+      box-shadow: 0 4px 15px rgba(255, 215, 0, 0.3);
+      min-width: 120px;
+    }
+
+    .btn-accent:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 6px 20px rgba(255, 215, 0, 0.4);
+      background: linear-gradient(135deg, #ffed4e 0%, #ffd700 100%);
+    }
+
+    .btn-accent:active {
+      transform: translateY(0);
+    }
+
+    .btn-secondary {
+      background: rgba(108, 117, 125, 0.9);
+      color: white;
+      border: none;
+      padding: 14px 32px;
+      border-radius: 10px;
+      cursor: pointer;
+      font-weight: 600;
+      font-size: 1rem;
+      transition: all 0.3s ease;
+      min-width: 120px;
+    }
+
+    .btn-secondary:hover {
+      background: rgba(108, 117, 125, 1);
+      transform: translateY(-2px);
+    }
+
+    .btn-secondary:active {
+      transform: translateY(0);
+    }
+
+    .error-message {
+      color: #ff6b6b;
+      background: rgba(255, 107, 107, 0.1);
+      padding: 12px;
+      border-radius: 8px;
+      font-size: 0.9rem;
+      margin-top: 12px;
+      border: 1px solid rgba(255, 107, 107, 0.3);
+    }
+
+    /* ============================================
+       ANIMATIONS
+       ============================================ */
     @keyframes gradientShift {
-      0% {
-        background-position: 0% 50%;
-      }
-      50% {
-        background-position: 100% 50%;
-      }
-      100% {
-        background-position: 0% 50%;
-      }
+      0%, 100% { background-position: 0% 50%; }
+      50% { background-position: 100% 50%; }
     }
 
     @keyframes particleMove {
-      0% {
-        transform: translate(0, 0);
-      }
-      100% {
-        transform: translate(50px, 50px);
-      }
+      0% { transform: translate(0, 0); }
+      100% { transform: translate(50px, 50px); }
     }
 
     @keyframes sweepLight {
-      0% {
-        left: -100%;
-      }
-      100% {
-        left: 150%;
-      }
-    }
-
-    @keyframes sweepLogoLight {
-      0% {
-        left: -100%;
-      }
-      100% {
-        left: 150%;
-      }
-    }
-
-    @keyframes sweepLightCombined {
-      0% {
-        left: -150%;
-      }
-      100% {
-        left: 200%;
-      }
+      0% { left: -100%; }
+      100% { left: 150%; }
     }
 
     @keyframes textLightSweep {
-      0% {
-        background-position: -200% center;
-      }
-      100% {
-        background-position: 200% center;
-      }
+      0% { background-position: -200% center; }
+      100% { background-position: 200% center; }
     }
 
     @keyframes zoomRotate {
@@ -312,37 +535,6 @@
       }
     }
 
-    @keyframes pulseRing {
-      0% {
-        transform: translate(-50%, -50%) scale(0.8);
-        opacity: 1;
-      }
-      100% {
-        transform: translate(-50%, -50%) scale(1.5);
-        opacity: 0;
-      }
-    }
-
-    @keyframes textShimmer {
-      0% {
-        background-position: -200% center;
-      }
-      100% {
-        background-position: 200% center;
-      }
-    }
-
-    @keyframes pulseRing {
-      0% {
-        transform: translate(-50%, -50%) scale(0.8);
-        opacity: 1;
-      }
-      100% {
-        transform: translate(-50%, -50%) scale(1.5);
-        opacity: 0;
-      }
-    }
-
     @keyframes scalePulseOnce {
       0% {
         transform: scale(0.5);
@@ -354,20 +546,6 @@
       100% {
         transform: scale(1);
         opacity: 1;
-      }
-    }
-
-    @keyframes typewriter {
-      0% {
-        opacity: 0;
-        width: 0;
-      }
-      1% {
-        opacity: 1;
-      }
-      100% {
-        opacity: 1;
-        width: 100%;
       }
     }
 
@@ -394,30 +572,13 @@
     }
 
     @keyframes fillProgress {
-      0% {
-        width: 0%;
-      }
-      100% {
-        width: 100%;
-      }
+      0% { width: 0%; }
+      100% { width: 100%; }
     }
 
     @keyframes shimmerProgress {
-      0% {
-        background-position: -200% center;
-      }
-      100% {
-        background-position: 200% center;
-      }
-    }
-
-    @keyframes rotate3d {
-      0%, 100% {
-        transform: perspective(1000px) rotateY(0deg);
-      }
-      50% {
-        transform: perspective(1000px) rotateY(10deg);
-      }
+      0% { background-position: -200% center; }
+      100% { background-position: 200% center; }
     }
 
     @keyframes fadeOut {
@@ -428,20 +589,8 @@
     }
 
     @keyframes fadeIn {
-      to {
-        opacity: 1;
-      }
-    }
-
-    @keyframes zoomIn {
-      from {
-        transform: scale(0.5);
-        opacity: 0;
-      }
-      to {
-        transform: scale(1);
-        opacity: 1;
-      }
+      from { opacity: 0; }
+      to { opacity: 1; }
     }
 
     @keyframes slideUp {
@@ -455,24 +604,9 @@
       }
     }
 
-    @keyframes fadeInScale {
-      0% {
-        opacity: 0;
-        transform: scale(0.3);
-      }
-      100% {
-        opacity: 1;
-        transform: scale(1);
-      }
-    }
-
     @keyframes float {
-      0%, 100% {
-        transform: translateY(0px);
-      }
-      50% {
-        transform: translateY(-10px);
-      }
+      0%, 100% { transform: translateY(0px); }
+      50% { transform: translateY(-10px); }
     }
 
     @keyframes glow {
@@ -484,40 +618,199 @@
       }
     }
 
-    @keyframes bounce {
-      0%, 80%, 100% {
-        transform: scale(0);
-        opacity: 0.5;
+    @keyframes slideInRight {
+      from {
+        transform: translateX(100%);
+        opacity: 0;
       }
-      40% {
+      to {
+        transform: translateX(0);
+        opacity: 1;
+      }
+    }
+
+    @keyframes shrinkHeight {
+      from { height: 100%; }
+      to { height: 0%; }
+    }
+
+    @keyframes scaleIn {
+      from {
+        transform: scale(0.9);
+        opacity: 0;
+      }
+      to {
         transform: scale(1);
         opacity: 1;
       }
     }
 
-    /* Responsive */
+    /* ============================================
+       RESPONSIVE BREAKPOINTS
+       ============================================ */
+    
+    /* Tablets and below (768px) */
     @media (max-width: 768px) {
       .splash-logo-wrapper {
         width: 140px;
         height: 140px;
       }
+      
       .splash-logo {
         width: 140px;
         height: 140px;
       }
-      .pulse-ring {
-        width: 140px;
-        height: 140px;
-      }
+      
       .splash-title {
-        font-size: 2rem;
+        font-size: 2.2rem;
       }
+      
       .splash-subtitle {
-        font-size: 1rem;
-        padding: 0 20px;
+        font-size: 1.1rem;
+        padding: 0 15px;
       }
+      
       .splash-acronym {
         font-size: 0.95rem;
+      }
+
+      .toast-container {
+        top: 10px;
+        right: 10px;
+        width: calc(100% - 20px);
+      }
+
+      .alert {
+        padding: 14px 16px;
+        font-size: 0.9rem;
+      }
+
+      .modal-content {
+        margin: 0 10px;
+      }
+
+      .modal-header h3 {
+        font-size: 1.2rem;
+      }
+
+      .modal-body {
+        padding: 24px 20px;
+      }
+
+      .verification-input input {
+        font-size: 1.2rem;
+        letter-spacing: 6px;
+      }
+
+      .btn-accent,
+      .btn-secondary {
+        padding: 12px 24px;
+        font-size: 0.95rem;
+        min-width: 100px;
+      }
+    }
+
+    /* Small mobile devices (480px) */
+    @media (max-width: 480px) {
+      .splash-logo-wrapper {
+        width: 110px;
+        height: 110px;
+      }
+      
+      .splash-logo {
+        width: 110px;
+        height: 110px;
+      }
+      
+      .splash-title {
+        font-size: 1.8rem;
+        letter-spacing: 1px;
+      }
+      
+      .splash-subtitle {
+        font-size: 0.95rem;
+      }
+      
+      .splash-acronym {
+        font-size: 0.85rem;
+        letter-spacing: 2px;
+      }
+
+      .progress-container {
+        width: 200px;
+      }
+
+      .toast-container {
+        max-width: 100%;
+      }
+
+      .alert {
+        padding: 12px 14px;
+        font-size: 0.85rem;
+        border-radius: 10px;
+      }
+
+      .toast-icon {
+        width: 24px;
+        height: 24px;
+        font-size: 14px;
+      }
+
+      .toast-close {
+        font-size: 20px;
+        width: 20px;
+        height: 20px;
+      }
+
+      .modal-header {
+        padding: 20px 16px;
+      }
+
+      .modal-header h3 {
+        font-size: 1.1rem;
+        flex-direction: column;
+        gap: 6px;
+      }
+
+      .modal-body {
+        padding: 20px 16px;
+      }
+
+      .modal-body p {
+        font-size: 0.9rem;
+      }
+
+      .verification-input input {
+        padding: 14px;
+        font-size: 1.1rem;
+        letter-spacing: 5px;
+      }
+
+      .modal-footer {
+        padding: 16px;
+        flex-direction: column;
+      }
+
+      .btn-accent,
+      .btn-secondary {
+        width: 100%;
+        padding: 12px 20px;
+      }
+    }
+
+    /* Extra small devices (360px) */
+    @media (max-width: 360px) {
+      .splash-title {
+        font-size: 1.6rem;
+      }
+
+      .splash-subtitle {
+        font-size: 0.85rem;
+      }
+
+      .verification-input input {
+        font-size: 1rem;
+        letter-spacing: 4px;
       }
     }
   </style>
@@ -527,13 +820,9 @@
 <!-- Splash Screen -->
 <div class="splash-screen">
   <div class="splash-content">
-    <!-- Combined logo and text wrapper for unified light sweep -->
     <div class="logo-text-combined">
       <div class="splash-logo-wrapper">
         <img src="{% static 'images/ASCReM_Logo.png' %}" alt="ASCReM Logo" class="splash-logo">
-        <!-- Light sweep ONLY on logo -->
-        <div class="logo-light-sweep"></div>
-        <!-- Particle burst elements -->
         <div class="particle" style="--tx: -80px; --ty: -80px;"></div>
         <div class="particle" style="--tx: 80px; --ty: -80px;"></div>
         <div class="particle" style="--tx: -80px; --ty: 80px;"></div>
@@ -549,7 +838,6 @@
     <p class="splash-subtitle">Automated Student Class Record Monitoring</p>
     <p class="splash-acronym">WEB APPLICATION</p>
     
-    <!-- Progress Bar -->
     <div class="progress-container">
       <div class="progress-bar"></div>
     </div>
@@ -690,7 +978,7 @@
       <p>We've sent a 6-digit verification code to your email address.</p>
       <p>Please enter the code below:</p>
       <div class="verification-input">
-        <input type="text" id="verificationCode" placeholder="Enter 6-digit code" maxlength="6" pattern="[0-9]{6}">
+        <input type="text" id="verificationCode" placeholder="000000" maxlength="6" pattern="[0-9]{6}">
       </div>
       <div id="verificationError" class="error-message" style="display: none;"></div>
     </div>
@@ -701,115 +989,37 @@
   </div>
 </div>
 
-<style>
-.modal {
-  position: fixed;
-  top: 0;
-  left: 0;
-  width: 100%;
-  height: 100%;
-  background: rgba(0, 0, 0, 0.7);
-  z-index: 10000;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-}
-
-.modal-content {
-  background: linear-gradient(145deg, #0d122e 0%, #0a0f1f 100%);
-  border-radius: 15px;
-  padding: 0;
-  width: 90%;
-  max-width: 400px;
-  box-shadow: 0 20px 60px rgba(0, 0, 0, 0.5);
-  border: 1px solid rgba(255, 215, 0, 0.2);
-}
-
-.modal-header {
-  padding: 20px;
-  border-bottom: 1px solid rgba(255, 215, 0, 0.2);
-  text-align: center;
-}
-
-.modal-header h3 {
-  color: #ffd700;
-  margin: 0;
-  font-size: 1.3rem;
-}
-
-.modal-body {
-  padding: 20px;
-  text-align: center;
-}
-
-.modal-body p {
-  color: #e5e7eb;
-  margin-bottom: 15px;
-}
-
-.verification-input {
-  margin: 20px 0;
-}
-
-.verification-input input {
-  width: 100%;
-  padding: 15px;
-  font-size: 1.2rem;
-  text-align: center;
-  letter-spacing: 3px;
-  background: #fff;
-  border: 2px solid #ccc;
-  border-radius: 8px;
-  color: #000;
-  outline: none;
-}
-
-.verification-input input:focus {
-  border-color: #ffd700;
-  box-shadow: 0 0 0 3px rgba(255, 215, 0, 0.15);
-}
-
-.modal-footer {
-  padding: 20px;
-  display: flex;
-  gap: 10px;
-  justify-content: center;
-}
-
-.btn-secondary {
-  background: rgba(108, 117, 125, 0.8);
-  color: white;
-  border: none;
-  padding: 12px 24px;
-  border-radius: 8px;
-  cursor: pointer;
-  font-weight: 600;
-  transition: all 0.3s ease;
-}
-
-.btn-secondary:hover {
-  background: rgba(108, 117, 125, 1);
-}
-
-.error-message {
-  color: #ff6b6b;
-  font-size: 0.9rem;
-  margin-top: 10px;
-}
-</style>
+<!-- Toast Container -->
+<div class="toast-container" id="toastContainer">
+  {% if messages %}
+    {% for message in messages %}
+      <div class="alert alert-{{ message.tags }}" id="toast-{{ forloop.counter }}">
+        <div class="toast-icon">
+          {% if message.tags == 'success' %}✓{% elif message.tags == 'error' or message.tags == 'danger' %}✕{% elif message.tags == 'warning' %}⚠{% else %}ℹ{% endif %}
+        </div>
+        <div class="toast-content">{{ message }}</div>
+        <button class="toast-close" onclick="this.parentElement.remove()">&times;</button>
+      </div>
+    {% endfor %}
+  {% endif %}
+</div>
 
 <script>
-  // Progress percentage counter
+  // Progress percentage counter - synchronized with progress bar animation
   const progressPercentage = document.getElementById('progressPercentage');
   let progress = 0;
-  const progressInterval = setInterval(() => {
-    if (progress <= 100) {
-      progressPercentage.textContent = progress + '%';
-      progress += 2;
-    } else {
-      clearInterval(progressInterval);
-    }
-  }, 30);
+  
+  // Start counting after 1.8s delay (when progress bar animation starts)
+  setTimeout(() => {
+    const progressInterval = setInterval(() => {
+      if (progress <= 100) {
+        progressPercentage.textContent = progress + '%';
+        progress += 1; // Increment by 1 for smoother counting
+      } else {
+        clearInterval(progressInterval);
+      }
+    }, 30); // 30ms * 100 steps = 3000ms (3 seconds) matching the progress bar animation
+  }, 1800); // Match the animation-delay of progress bar
 
   const loginTab = document.getElementById('loginTab');
   const registerTab = document.getElementById('registerTab');
@@ -843,6 +1053,14 @@
     loginForm.classList.remove('active');
   });
 
+  // Auto-hide toasts after 5 seconds
+  setTimeout(() => {
+    document.querySelectorAll('.alert').forEach(toast => {
+      toast.style.animation = 'slideInRight 0.4s ease-out reverse';
+      setTimeout(() => toast.remove(), 400);
+    });
+  }, 5000);
+
   // Email Verification Modal
   const verificationModal = document.getElementById('verificationModal');
   const verificationCode = document.getElementById('verificationCode');
@@ -855,9 +1073,6 @@
     verificationModal.style.display = 'flex';
     verificationCode.focus();
   {% endif %}
-  
-  // Remove AJAX from registration form - let it submit normally
-  // This ensures all messages show as toast notifications
 
   // Handle verification
   verifyBtn.addEventListener('click', function() {
@@ -907,22 +1122,14 @@
       verificationError.style.display = 'none';
     }, 5000);
   }
+
+  // Close modal when clicking outside
+  verificationModal.addEventListener('click', function(e) {
+    if (e.target === verificationModal) {
+      verificationModal.style.display = 'none';
+    }
+  });
 </script>
-<!-- Toast Messages -->
-{% if messages %}
-  {% for message in messages %}
-    <div class="alert alert-{{ message.tags }}" id="toast-{{ forloop.counter }}">
-      {{ message }}
-      <button onclick="this.parentElement.remove()" style="float:right; background:none; border:none; color:white; font-size:18px; cursor:pointer;">&times;</button>
-    </div>
-  {% endfor %}
-  <script>
-    // Auto-hide toasts after 5 seconds
-    setTimeout(() => {
-      document.querySelectorAll('.alert').forEach(toast => toast.remove());
-    }, 5000);
-  </script>
-{% endif %}
 
 </body>
 </html>
