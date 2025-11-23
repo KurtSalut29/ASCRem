@@ -817,7 +817,7 @@
             <option value="">Select a Class...</option>
             {% for c in classes %}
               <option value="{{ c.id }}" {% if selected_class and selected_class.id == c.id %}selected{% endif %}>
-                {{ c.class_name }} - {{ c.subject }} ({{ c.section }})
+                {{ c.class_name }}
               </option>
             {% endfor %}
           </select>
@@ -906,7 +906,7 @@
             <!-- Class Info Banner -->
             <div class="class-info-banner">
               <h5>
-                {{ selected_class.school_year }} – {{ selected_class.semester }} – {{ selected_class.class_name }} – {{ selected_class.subject }} – {{ selected_class.section }}
+                {{ selected_class.school_year }} – {{ selected_class.semester }} – {{ selected_class.class_name }} 
               </h5>
             </div>
 
