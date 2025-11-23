@@ -1,11 +1,16 @@
 from django.contrib.auth.models import AbstractUser
 from django.db import models
 from django.conf import settings
+import random
+import string
+from django.utils import timezone
+from datetime import timedelta
 
 # -----------------------------
 # Custom User Model
 # -----------------------------
 class User(AbstractUser):
+    username = models.CharField(max_length=150, unique=True)  # Override with no validators
     instructor_id = models.CharField(max_length=20, unique=True)
     email = models.EmailField(unique=True)
     first_name = models.CharField(max_length=30, blank=True)
@@ -46,6 +51,26 @@ class User(AbstractUser):
 
 
 # -----------------------------
+# Email Verification Model
+# -----------------------------
+class EmailVerification(models.Model):
+    email = models.EmailField()
+    code = models.CharField(max_length=6)
+    created_at = models.DateTimeField(auto_now_add=True)
+    is_verified = models.BooleanField(default=False)
+    
+    def is_expired(self):
+        return timezone.now() > self.created_at + timedelta(minutes=10)
+    
+    @classmethod
+    def generate_code(cls):
+        return ''.join(random.choices(string.digits, k=6))
+    
+    def __str__(self):
+        return f"{self.email} - {self.code}"
+
+
+# -----------------------------
 # Class Model
 # -----------------------------
 class Class(models.Model):
@@ -57,6 +82,11 @@ class Class(models.Model):
     semester = models.CharField(max_length=20)
     school_year = models.CharField(max_length=20)
 
+    @property
+    def class_name(self):
+        """Generate class name from program, subject, year_level, and section."""
+        return f"{self.program} - {self.subject} ({self.year_level} - {self.section})"
+    
     def __str__(self):
         return f"{self.program} - {self.subject} ({self.year_level} - {self.section})"
 

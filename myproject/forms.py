@@ -4,17 +4,18 @@ from django.core.exceptions import ValidationError
 from .models import User, Class, Student, Attendance, Score, GradeCalculationSettings
 import re  # ✅ Regex import
 
-class RegisterForm(UserCreationForm):
+class RegisterForm(forms.ModelForm):
     username = forms.CharField(
         max_length=150,
         required=True,
-        widget=forms.TextInput(attrs={"placeholder": "Enter Username"})
+        validators=[],  # Remove all built-in validators
+        widget=forms.TextInput(attrs={"placeholder": "Enter Username (letters, numbers, spaces, symbols allowed)"})
     )
     instructor_id = forms.CharField(
-        max_length=10,
+        max_length=20,
         required=True,
         label="Instructor ID",
-        widget=forms.TextInput(attrs={"placeholder": "Enter Instructor ID"})
+        widget=forms.TextInput(attrs={"placeholder": "Enter Instructor ID (letters, numbers, hyphens allowed)"})
     )
     email = forms.EmailField(
         required=True,
@@ -85,15 +86,22 @@ class RegisterForm(UserCreationForm):
             raise forms.ValidationError("This Instructor ID is already taken.")
         return instructor_id
 
+    def clean_username(self):
+        username = self.cleaned_data.get("username")
+        if User.objects.filter(username=username).exists():
+            raise forms.ValidationError("This username is already taken.")
+        return username
+
+    def clean_password2(self):
+        password1 = self.cleaned_data.get("password1")
+        password2 = self.cleaned_data.get("password2")
+        if password1 and password2 and password1 != password2:
+            raise ValidationError("Passwords don't match.")
+        return password2
+
     def save(self, commit=True):
         user = super().save(commit=False)
-        user.username = self.cleaned_data["username"]
-        user.instructor_id = self.cleaned_data["instructor_id"]
-        user.email = self.cleaned_data["email"]
-        user.first_name = self.cleaned_data["first_name"]
-        user.last_name = self.cleaned_data["last_name"]
-        user.middle_name = self.cleaned_data["middle_name"]
-        user.department = self.cleaned_data["department"]
+        user.set_password(self.cleaned_data["password1"])
         user.status = "active"
         if commit:
             user.save()

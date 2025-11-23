@@ -17,8 +17,11 @@ from .models import (
     User, Class, Student, GradeSummary, Setting, UserSettings,
     Attendance, Score, GradeCalculationSettings, ActivityLog,
     GradeCategory, GradeItem, StudentScore, TransmutationTable,
-
+    EmailVerification
 )
+from django.core.mail import send_mail
+from django.template.loader import render_to_string
+from django.utils.html import strip_tags
 import csv
 import io
 import openpyxl
@@ -45,6 +48,28 @@ def get_user_theme(user):
         return user.app_setting.theme
     except:
         return "light"  # Default fallback
+
+# -----------------------------
+# EMAIL VERIFICATION HELPER
+# -----------------------------
+def send_verification_email(email, code):
+    """Send verification code to email"""
+    try:
+        subject = 'ASCReM Email Verification'
+        message = f'Your verification code is: {code}\n\nThis code will expire in 10 minutes.'
+        send_mail(
+            subject,
+            message,
+            'noreply@ascrem.com',
+            [email],
+            fail_silently=False,
+        )
+        print(f"\n=== EMAIL SENT ===\nTo: {email}\nCode: {code}\n==================\n")
+        return True
+    except Exception as e:
+        print(f"Email sending failed: {e}")
+        return False
+
 
 # -----------------------------
 # AUTH / INDEX / DASHBOARD
@@ -83,19 +108,44 @@ def index(request):
             if register_form.is_valid():
                 password1 = register_form.cleaned_data.get("password1")
                 password2 = register_form.cleaned_data.get("password2")
+                email = register_form.cleaned_data.get("email")
 
                 if len(password1) != 4 or len(password2) != 4:
                     messages.error(request, "Password must be exactly 4 characters long.")
                 elif password1 != password2:
                     messages.error(request, "Passwords do not match.")
                 else:
-                    user = register_form.save()
-                    Setting.objects.create(user=user)
-                    UserSettings.objects.create(user=user)
-                    messages.success(request, "Account created successfully! Please log in.")
-                    return redirect("index")
+                    # Generate and send verification code
+                    code = EmailVerification.generate_code()
+                    EmailVerification.objects.filter(email=email).delete()
+                    EmailVerification.objects.create(email=email, code=code)
+                    
+                    if send_verification_email(email, code):
+                        request.session['pending_registration'] = {
+                            'instructor_id': register_form.cleaned_data.get('instructor_id'),
+                            'username': register_form.cleaned_data.get('username'),
+                            'email': email,
+                            'first_name': register_form.cleaned_data.get('first_name'),
+                            'last_name': register_form.cleaned_data.get('last_name'),
+                            'password': password1,
+                        }
+                        messages.success(request, f"Verification code sent to {email}. Please check your email and enter the code below.")
+                        return render(request, "index.html", {
+                            "register_form": register_form,
+                            "login_form": login_form,
+                            "active_tab": active_tab,
+                            "show_verification_modal": True
+                        })
+                    else:
+                        messages.error(request, "Failed to send verification email. Please try again.")
             else:
-                messages.error(request, "Registration failed. Please check errors.")
+                # Show single consolidated error message
+                messages.error(request, "Registration failed. Please check your information and try again.")
+                return render(request, "index.html", {
+                    "register_form": register_form,
+                    "login_form": login_form,
+                    "active_tab": active_tab
+                })
 
         # -----------------------------
         # Login
@@ -121,6 +171,58 @@ def index(request):
         "login_form": login_form,
         "active_tab": active_tab
     })
+
+
+def verify_email(request):
+    """Handle email verification"""
+    if request.method == "POST":
+        code = request.POST.get('verification_code')
+        pending_data = request.session.get('pending_registration')
+        
+        if not pending_data:
+            messages.error(request, 'No pending registration found.')
+            return JsonResponse({'success': False})
+        
+        try:
+            verification = EmailVerification.objects.get(
+                email=pending_data['email'],
+                code=code,
+                is_verified=False
+            )
+            
+            if verification.is_expired():
+                messages.error(request, 'Verification code has expired.')
+                return JsonResponse({'success': False})
+            
+            # Create user account
+            user = User.objects.create_user(
+                username=pending_data['username'],
+                instructor_id=pending_data['instructor_id'],
+                email=pending_data['email'],
+                first_name=pending_data['first_name'],
+                last_name=pending_data['last_name'],
+                password=pending_data['password']
+            )
+            
+            # Create related objects
+            Setting.objects.create(user=user)
+            UserSettings.objects.create(user=user)
+            
+            # Mark verification as complete
+            verification.is_verified = True
+            verification.save()
+            
+            # Clear session data
+            del request.session['pending_registration']
+            
+            messages.success(request, 'Account created successfully! Please log in.')
+            return JsonResponse({'success': True})
+            
+        except EmailVerification.DoesNotExist:
+            messages.error(request, 'Invalid verification code.')
+            return JsonResponse({'success': False})
+    
+    return JsonResponse({'success': False, 'message': 'Invalid request method.'})
 
 
 @login_required
