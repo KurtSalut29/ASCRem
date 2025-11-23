@@ -153,6 +153,14 @@ elif EMAIL_PROVIDER == 'yahoo':
     EMAIL_TIMEOUT = 10
     EMAIL_HOST_USER = config('EMAIL_HOST_USER', default='')
     EMAIL_HOST_PASSWORD = config('EMAIL_HOST_PASSWORD', default='')
+elif EMAIL_PROVIDER == 'brevo':
+    EMAIL_BACKEND = 'django.core.mail.backends.smtp.EmailBackend'
+    EMAIL_HOST = 'smtp-relay.brevo.com'
+    EMAIL_PORT = 587
+    EMAIL_USE_TLS = True
+    EMAIL_TIMEOUT = 10
+    EMAIL_HOST_USER = config('EMAIL_HOST_USER', default='')  # Your Brevo login email
+    EMAIL_HOST_PASSWORD = config('EMAIL_HOST_PASSWORD', default='')  # Your Brevo SMTP key
 else:  # gmail default
     EMAIL_BACKEND = 'django.core.mail.backends.smtp.EmailBackend'
     EMAIL_HOST = 'smtp.gmail.com'

@@ -162,14 +162,8 @@ def index(request):
                         "active_tab": active_tab,
                         "show_verification_modal": True
                     })
-            else:
-                # Show single consolidated error message
-                messages.error(request, "Registration failed. Please check your information and try again.")
-                return render(request, "index.html", {
-                    "register_form": register_form,
-                    "login_form": login_form,
-                    "active_tab": active_tab
-                })
+            # Form has errors - don't show additional error message
+            # The form errors will be displayed automatically
 
         # -----------------------------
         # Login
