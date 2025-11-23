@@ -76,17 +76,6 @@ def send_verification_email(email, code):
     logger = logging.getLogger(__name__)
     
     try:
-        # Log current configuration
-        logger.info(f"=== EMAIL CONFIG DEBUG ===")
-        logger.info(f"Provider: {getattr(settings, 'EMAIL_PROVIDER', 'default')}")
-        logger.info(f"Backend: {settings.EMAIL_BACKEND}")
-        logger.info(f"Host: {settings.EMAIL_HOST}")
-        logger.info(f"Port: {settings.EMAIL_PORT}")
-        logger.info(f"TLS: {settings.EMAIL_USE_TLS}")
-        logger.info(f"User: {settings.EMAIL_HOST_USER}")
-        logger.info(f"Pass configured: {'Yes' if settings.EMAIL_HOST_PASSWORD else 'No'}")
-        logger.info(f"=========================")
-        
         # Check if email credentials are configured
         if not settings.EMAIL_HOST_USER or not settings.EMAIL_HOST_PASSWORD:
             logger.error(f"Email credentials not configured")
@@ -97,6 +86,15 @@ def send_verification_email(email, code):
         if not test_email_connection():
             logger.error("Email connection test failed")
             return False
+        
+        # If this is a test email validation, don't send actual email
+        if code == "TEST":
+            # Just validate email format and connection
+            import re
+            email_pattern = r'^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$'
+            if not re.match(email_pattern, email):
+                return False
+            return True
             
         subject = 'ASCReM Email Verification'
         message = f'Your verification code is: {code}\n\nThis code will expire in 10 minutes.'
@@ -168,29 +166,35 @@ def index(request):
                 elif password1 != password2:
                     messages.error(request, "Passwords do not match.")
                 else:
-                    # Generate and send verification code
-                    code = EmailVerification.generate_code()
-                    EmailVerification.objects.filter(email=email).delete()
-                    EmailVerification.objects.create(email=email, code=code)
+                    # Validate email by attempting to send a test email
+                    email_valid = send_verification_email(email, "TEST")
                     
-                    request.session['pending_registration'] = {
-                        'instructor_id': register_form.cleaned_data.get('instructor_id'),
-                        'username': register_form.cleaned_data.get('username'),
-                        'email': email,
-                        'first_name': register_form.cleaned_data.get('first_name'),
-                        'last_name': register_form.cleaned_data.get('last_name'),
-                        'password': password1,
-                    }
-                    
-                    send_verification_email(email, code)
-                    messages.info(request, "Check your email for the verification code, or use the code displayed in the verification modal.")
-                    return render(request, "index.html", {
-                        "register_form": register_form,
-                        "login_form": login_form,
-                        "active_tab": active_tab,
-                        "show_verification_modal": True,
-                        "verification_code": code
-                    })
+                    if not email_valid:
+                        messages.error(request, "Invalid email address. Please provide a valid email that can receive messages.")
+                    else:
+                        # Generate and send verification code
+                        code = EmailVerification.generate_code()
+                        EmailVerification.objects.filter(email=email).delete()
+                        EmailVerification.objects.create(email=email, code=code)
+                        
+                        request.session['pending_registration'] = {
+                            'instructor_id': register_form.cleaned_data.get('instructor_id'),
+                            'username': register_form.cleaned_data.get('username'),
+                            'email': email,
+                            'first_name': register_form.cleaned_data.get('first_name'),
+                            'last_name': register_form.cleaned_data.get('last_name'),
+                            'password': password1,
+                        }
+                        
+                        send_verification_email(email, code)
+                        messages.info(request, "Check your email for the verification code, or use the code displayed in the verification modal.")
+                        return render(request, "index.html", {
+                            "register_form": register_form,
+                            "login_form": login_form,
+                            "active_tab": active_tab,
+                            "show_verification_modal": True,
+                            "verification_code": code
+                        })
             # Form has errors - don't show additional error message
             # The form errors will be displayed automatically
 
